@@ -65,7 +65,7 @@
             margin-top: 14px
         }
 
-        button, input, select {
+        button, input, select, textarea {
             font: inherit
         }
 
@@ -84,6 +84,12 @@
             .btn:hover {
                 transform: translateY(-1px);
                 filter: saturate(1.05)
+            }
+
+            .btn:disabled {
+                opacity: .55;
+                cursor: not-allowed;
+                transform: none
             }
 
         .btn-primary {
@@ -215,7 +221,8 @@
             color: #222;
             padding: 13px 14px;
             border-radius: 16px;
-            font-weight: 700
+            font-weight: 700;
+            margin-bottom: 8px
         }
 
             .nav-btn:hover, .nav-btn.active {
@@ -321,7 +328,8 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            transition: .2s
+            transition: .2s;
+            cursor: pointer
         }
 
             .card:hover {
@@ -496,7 +504,7 @@
         }
 
         .modal-card {
-            width: min(620px,100%);
+            width: min(720px,100%);
             background: #fff;
             border-radius: 22px;
             box-shadow: 0 18px 60px rgba(0,0,0,.25);
@@ -536,15 +544,11 @@
             min-height: 100px;
             resize: vertical
         }
-
+        
       
-
-
-
-      </style>
+    </style>
 </head>
 <body>
-   
 
     <div id="roleScreen" class="screen">
         <div class="auth-card">
@@ -552,6 +556,7 @@
             <div class="muted">Chọn loại tài khoản trước khi đăng nhập</div>
             <div class="role-row">
                 <button class="btn btn-primary" onclick="chooseRole('user')">Người dùng</button>
+                <button class="btn btn-ghost" onclick="chooseRole('librarian')">Thủ thư</button>
                 <button class="btn btn-ghost" onclick="chooseRole('admin')">Admin</button>
             </div>
         </div>
@@ -596,7 +601,7 @@
         <div class="topbar">
             <div>
                 <div class="brand">Library Management</div>
-                <div class="brand-sub">Giao diện quản lý sách, tài khoản và mượn trả</div>
+                <div class="brand-sub">Giao diện quản lý sách, tài khoản, phiếu mượn và báo cáo</div>
             </div>
             <div class="session-chip" id="sessionInfo"></div>
         </div>
@@ -622,1107 +627,1768 @@
         const FINE_PER_DAY = 5000;
 
         const seedBooks = [
-          { id: 'B01', name: 'Harry Potter', author: 'J.K. Rowling', category: 'Fantasy', total: 5, quantity: 5 },
-          { id: 'B02', name: 'Doraemon', author: 'Fujiko F. Fujio', category: 'Comic', total: 10, quantity: 10 },
-          { id: 'B03', name: 'Sherlock Holmes', author: 'Arthur Conan Doyle', category: 'Detective', total: 7, quantity: 7 },
-          { id: 'B04', name: 'One Piece', author: 'Eiichiro Oda', category: 'Manga', total: 12, quantity: 12 },
-          { id: 'B05', name: 'Naruto', author: 'Masashi Kishimoto', category: 'Manga', total: 9, quantity: 9 },
-          { id: 'B06', name: 'Clean Code', author: 'Robert C. Martin', category: 'IT', total: 4, quantity: 4 },
-          { id: 'B07', name: 'The Hobbit', author: 'J.R.R. Tolkien', category: 'Fantasy', total: 6, quantity: 6 },
-          { id: 'B08', name: 'C++ Primer', author: 'Stanley B. Lippman', category: 'IT', total: 8, quantity: 8 },
-          { id: 'B09', name: 'Python Crash Course', author: 'Eric Matthes', category: 'IT', total: 5, quantity: 5 },
-          { id: 'B10', name: 'Database Systems', author: 'Ramez Elmasri', category: 'IT', total: 3, quantity: 3 },
-          { id: 'B11', name: 'Atomic Habits', author: 'James Clear', category: 'Self-help', total: 6, quantity: 6 },
-          { id: 'B12', name: 'Rich Dad Poor Dad', author: 'Robert Kiyosaki', category: 'Finance', total: 7, quantity: 7 },
-          { id: 'B13', name: 'Think and Grow Rich', author: 'Napoleon Hill', category: 'Finance', total: 5, quantity: 5 },
-          { id: 'B14', name: 'Sapiens', author: 'Yuval Noah Harari', category: 'History', total: 4, quantity: 4 },
-          { id: 'B15', name: '1984', author: 'George Orwell', category: 'Novel', total: 6, quantity: 6 },
-          { id: 'B16', name: 'The Alchemist', author: 'Paulo Coelho', category: 'Novel', total: 8, quantity: 8 },
-          { id: 'B17', name: 'To Kill a Mockingbird', author: 'Harper Lee', category: 'Novel', total: 3, quantity: 3 },
-          { id: 'B18', name: 'A Game of Thrones', author: 'George R. R. Martin', category: 'Fantasy', total: 5, quantity: 5 },
-          { id: 'B19', name: 'War and Peace', author: 'Leo Tolstoy', category: 'Classic', total: 2, quantity: 2 },
-          { id: 'B20', name: 'The Great Gatsby', author: 'F. Scott Fitzgerald', category: 'Classic', total: 4, quantity: 4 }
+            { id:'B01', name:'Harry Potter', author:'J.K. Rowling', category:'Fantasy', total:5, quantity:5, desc:'Câu chuyện về cậu bé phù thủy Harry Potter và hành trình chống lại Chúa tể Voldemort.' },
+            { id:'B02', name:'Doraemon', author:'Fujiko F. Fujio', category:'Comic', total:10, quantity:10, desc:'Bộ truyện nổi tiếng về chú mèo máy Doraemon đến từ tương lai giúp đỡ Nobita.' },
+            { id:'B03', name:'Sherlock Holmes', author:'Arthur Conan Doyle', category:'Detective', total:7, quantity:7, desc:'Tuyển tập những vụ án trinh thám hấp dẫn của thám tử Sherlock Holmes.' },
+            { id:'B04', name:'One Piece', author:'Eiichiro Oda', category:'Manga', total:12, quantity:12, desc:'Hành trình trở thành Vua Hải Tặc của Monkey D. Luffy cùng băng Mũ Rơm.' },
+            { id:'B05', name:'Naruto', author:'Masashi Kishimoto', category:'Manga', total:9, quantity:9, desc:'Câu chuyện về ninja Naruto và ước mơ trở thành Hokage của Làng Lá.' },
+            { id:'B06', name:'Clean Code', author:'Robert C. Martin', category:'IT', total:4, quantity:4, desc:'Cuốn sách nổi tiếng về cách viết mã sạch, rõ ràng và dễ bảo trì.' },
+            { id:'B07', name:'The Hobbit', author:'J.R.R. Tolkien', category:'Fantasy', total:6, quantity:6, desc:'Hành trình phiêu lưu của Bilbo Baggins cùng kho báu và rồng Smaug.' },
+            { id:'B08', name:'C++ Primer', author:'Stanley B. Lippman', category:'IT', total:8, quantity:8, desc:'Sách nền tảng giúp học và luyện kỹ năng lập trình C++.' },
+            { id:'B09', name:'Python Crash Course', author:'Eric Matthes', category:'IT', total:5, quantity:5, desc:'Lộ trình học Python từ cơ bản đến thực hành một cách nhanh và dễ hiểu.' },
+            { id:'B10', name:'Database Systems', author:'Ramez Elmasri', category:'IT', total:3, quantity:3, desc:'Giới thiệu nguyên lý thiết kế và quản trị cơ sở dữ liệu.' },
+            { id:'B11', name:'Atomic Habits', author:'James Clear', category:'Self-help', total:6, quantity:6, desc:'Cuốn sách về xây dựng thói quen nhỏ để tạo ra thay đổi lớn trong cuộc sống.' },
+            { id:'B12', name:'Rich Dad Poor Dad', author:'Robert Kiyosaki', category:'Finance', total:7, quantity:7, desc:'Những bài học tài chính cá nhân dễ hiểu và thực tế.' },
+            { id:'B13', name:'Think and Grow Rich', author:'Napoleon Hill', category:'Finance', total:5, quantity:5, desc:'Tác phẩm kinh điển về tư duy thành công và phát triển bản thân.' },
+            { id:'B14', name:'Sapiens', author:'Yuval Noah Harari', category:'History', total:4, quantity:4, desc:'Lịch sử loài người được kể lại dưới góc nhìn bao quát và thú vị.' },
+            { id:'B15', name:'1984', author:'George Orwell', category:'Novel', total:6, quantity:6, desc:'Tác phẩm phản địa đàng nổi tiếng về xã hội bị giám sát chặt chẽ.' },
+            { id:'B16', name:'The Alchemist', author:'Paulo Coelho', category:'Novel', total:8, quantity:8, desc:'Một hành trình tìm kiếm ước mơ và ý nghĩa cuộc sống.' },
+            { id:'B17', name:'To Kill a Mockingbird', author:'Harper Lee', category:'Novel', total:3, quantity:3, desc:'Câu chuyện về công lý, lòng nhân ái và tuổi thơ.' },
+            { id:'B18', name:'A Game of Thrones', author:'George R. R. Martin', category:'Fantasy', total:5, quantity:5, desc:'Cuộc tranh giành quyền lực gay cấn trong một thế giới giả tưởng rộng lớn.' },
+            { id:'B19', name:'War and Peace', author:'Leo Tolstoy', category:'Classic', total:2, quantity:2, desc:'Tác phẩm kinh điển khắc họa chiến tranh, hòa bình và số phận con người.' },
+            { id:'B20', name:'The Great Gatsby', author:'F. Scott Fitzgerald', category:'Classic', total:4, quantity:4, desc:'Bức tranh sống động về xã hội và những giấc mơ Mỹ.' }
         ];
 
         const seedUsers = [
-          {
-            username: 'admin',
-            password: '123',
-            role: 'admin',
-            fullName: 'Administrator',
-            email: 'admin@library.local',
-            phone: '',
-            inbox: [],
-            borrowed: []
-          }
+            {
+                username:'admin',
+                password:'123',
+                role:'admin',
+                fullName:'Quản trị viên',
+                email:'admin@library.local',
+                phone:'',
+                inbox:[],
+                borrowed:[]
+            },
+            {
+                username:'thu_thu',
+                password:'123',
+                role:'librarian',
+                fullName:'Thủ thư mẫu',
+                email:'thuthu@library.local',
+                phone:'',
+                inbox:[],
+                borrowed:[]
+            }
+        ];
+
+        const seedReports = [
+            { title:'Báo cáo tuần', content:'Tổng số phiếu mượn trong tuần này tăng 12% so với tuần trước.' },
+            { title:'Báo cáo kho', content:'5 đầu sách đang ở mức tồn kho thấp cần bổ sung thêm.' },
+            { title:'Báo cáo quá hạn', content:'Có 3 phiếu mượn quá hạn cần nhắc nhở và xử lý phạt.' }
         ];
 
         let state = {
-          role: 'user',
-          tab: 'books',
-          search: '',
-          sort: 'name-asc',
-          editingBook: null,
-          borrowBookId: null,
-          returnRecordId: null,
-          detailUser: null,
-          recentMessage: ''
+            role:'user',
+            tab:'books',
+            search:'',
+            sort:'name-asc',
+            editingBook:null,
+            editingUser:null,
+            borrowBookId:null,
+            returnReceiptId:null,
+            otpTarget:null,
+            otpCode:null,
+            otpPurpose:null
         };
 
-        function loadJSON(key, fallback) {
-          const raw = localStorage.getItem(key);
-          if (!raw) return JSON.parse(JSON.stringify(fallback));
-          try {
-            const parsed = JSON.parse(raw);
-            return parsed;
-          } catch {
-            return JSON.parse(JSON.stringify(fallback));
-          }
+        function cloneData(data){
+            return JSON.parse(JSON.stringify(data));
         }
 
-        function saveJSON(key, value) {
-          localStorage.setItem(key, JSON.stringify(value));
+        function loadJSON(key, fallback){
+            const raw = localStorage.getItem(key);
+            if(!raw) return cloneData(fallback);
+            try{
+                return JSON.parse(raw);
+            }catch{
+                return cloneData(fallback);
+            }
         }
 
-        function normalizeData() {
-          let books = loadJSON('books', seedBooks);
-          books = books.map((b, index) => ({
-            id: String(b.id || `B${String(index + 1).padStart(2, '0')}`),
-            name: b.name || 'Không tên',
-            author: b.author || '',
-            category: b.category || '',
-            total: Number.isFinite(Number(b.total)) ? Number(b.total) : Number(b.quantity || 0),
-            quantity: Number.isFinite(Number(b.quantity)) ? Number(b.quantity) : Number(b.total || 0)
-          }));
-          books.forEach(b => {
-            if (!Number.isFinite(b.total) || b.total < 0) b.total = b.quantity;
-            if (!Number.isFinite(b.quantity) || b.quantity < 0) b.quantity = 0;
-            if (b.quantity > b.total) b.total = b.quantity;
-          });
-          saveJSON('books', books);
+        function saveJSON(key, value){
+            localStorage.setItem(key, JSON.stringify(value));
+        }
 
-          let users = loadJSON('users', seedUsers);
-          users = users.map(u => ({
-            username: String(u.username || '').trim(),
-            password: String(u.password || ''),
-            role: u.role === 'admin' ? 'admin' : 'user',
-            fullName: u.fullName || u.username || '',
-            email: u.email || '',
-            phone: u.phone || '',
-            inbox: Array.isArray(u.inbox) ? u.inbox.map(m => typeof m === 'string' ? { text: m, at: new Date().toISOString() } : m) : [],
-            borrowed: Array.isArray(u.borrowed) ? u.borrowed.map(normalizeBorrowRecord) : []
-          })).filter(u => u.username);
-
-          if (!users.some(u => u.role === 'admin' && u.username === 'admin')) {
-            users.unshift({
-              username: 'admin',
-              password: '123',
-              role: 'admin',
-              fullName: 'Administrator',
-              email: 'admin@library.local',
-              phone: '',
-              inbox: [],
-              borrowed: []
+        function normalizeBooks(){
+            let books = loadJSON('books', seedBooks);
+            books = books.map((b, i) => ({
+                id: String(b.id || `B${String(i + 1).padStart(2,'0')}`),
+                name: b.name || 'Không tên',
+                author: b.author || '',
+                category: b.category || '',
+                total: Number.isFinite(Number(b.total)) ? Number(b.total) : Number(b.quantity || 0),
+                quantity: Number.isFinite(Number(b.quantity)) ? Number(b.quantity) : Number(b.total || 0),
+                desc: b.desc || 'Chưa có mô tả.'
+            }));
+            books.forEach(b => {
+                if(b.quantity > b.total) b.total = b.quantity;
+                if(b.quantity < 0) b.quantity = 0;
+                if(b.total < 0) b.total = b.quantity;
             });
-          }
-
-          saveJSON('users', users);
+            saveJSON('books', books);
+            return books;
         }
 
-        function normalizeBorrowRecord(r) {
-          const qty = Number(r.qty || r.quantity || 1);
-          const returnedQty = Number(r.returnedQty || 0);
-          return {
-            id: r.id || `BR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            bookId: r.bookId || r.idBook || r.book || '',
-            title: r.title || r.bookTitle || '',
-            qty: Number.isFinite(qty) && qty > 0 ? qty : 1,
-            returnedQty: Number.isFinite(returnedQty) && returnedQty >= 0 ? returnedQty : 0,
-            borrowDate: r.borrowDate || toDateInput(new Date()),
-            dueDate: r.dueDate || toDateInput(addDays(new Date(), 7)),
-            status: r.status === 'returned' ? 'returned' : 'borrowing',
-            noticeDueSoonSent: !!r.noticeDueSoonSent,
-            lastOverdueNoticeDay: Number.isFinite(Number(r.lastOverdueNoticeDay)) ? Number(r.lastOverdueNoticeDay) : 0,
-            finePaid: Number.isFinite(Number(r.finePaid)) ? Number(r.finePaid) : 0,
-            returnedAt: r.returnedAt || '',
-            note: r.note || ''
-          };
+        function normalizeReceipt(r){
+            const qty = Number(r.qty ?? r.quantity ?? 1);
+            const returnedQty = Number(r.returnedQty ?? 0);
+            return {
+                id: String(r.id || `PM-${Date.now()}-${Math.floor(Math.random()*1000)}`),
+                username: r.username || '',
+                fullName: r.fullName || '',
+                bookId: r.bookId || '',
+                title: r.title || '',
+                qty: Number.isFinite(qty) && qty > 0 ? qty : 1,
+                returnedQty: Number.isFinite(returnedQty) && returnedQty >= 0 ? returnedQty : 0,
+                borrowDate: r.borrowDate || toDateInput(new Date()),
+                dueDate: r.dueDate || toDateInput(addDays(new Date(), 7)),
+                status: r.status || 'borrowing',
+                finePaid: Number(r.finePaid || 0),
+                noticeDueSoonSent: !!r.noticeDueSoonSent,
+                lastOverdueNoticeDay: Number.isFinite(Number(r.lastOverdueNoticeDay)) ? Number(r.lastOverdueNoticeDay) : 0,
+                returnedAt: r.returnedAt || ''
+            };
         }
 
-        function toDateInput(date) {
-          const d = new Date(date);
-          const tz = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-          return tz.toISOString().slice(0, 10);
+        function normalizeUsers(){
+            let users = loadJSON('users', seedUsers);
+            users = users.map(u => ({
+                username: String(u.username || '').trim(),
+                password: String(u.password || ''),
+                role: u.role === 'admin' || u.role === 'librarian' ? u.role : 'user',
+                fullName: u.fullName || u.username || '',
+                email: u.email || '',
+                phone: u.phone || '',
+                inbox: Array.isArray(u.inbox) ? u.inbox.map(m => typeof m === 'string' ? { text:m, at:new Date().toISOString() } : m) : [],
+                borrowed: Array.isArray(u.borrowed) ? u.borrowed.map(normalizeReceipt) : []
+            })).filter(u => u.username);
+
+            if(!users.some(u => u.role === 'admin' && u.username === 'admin')){
+                users.unshift({
+                    username:'admin',
+                    password:'123',
+                    role:'admin',
+                    fullName:'Quản trị viên',
+                    email:'admin@library.local',
+                    phone:'',
+                    inbox:[],
+                    borrowed:[]
+                });
+            }
+            if(!users.some(u => u.role === 'librarian' && u.username === 'thu_thu')){
+                users.push({
+                    username:'thu_thu',
+                    password:'123',
+                    role:'librarian',
+                    fullName:'Thủ thư mẫu',
+                    email:'thuthu@library.local',
+                    phone:'',
+                    inbox:[],
+                    borrowed:[]
+                });
+            }
+            saveJSON('users', users);
+            return users;
         }
 
-        function addDays(date, days) {
-          const d = new Date(date);
-          d.setDate(d.getDate() + days);
-          return d;
+        function normalizeReceipts(){
+            let receipts = loadJSON('receipts', []);
+            receipts = receipts.map(normalizeReceipt);
+            saveJSON('receipts', receipts);
+            return receipts;
         }
 
-        function startOfDay(date) {
-          return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        function normalizeReports(){
+            const reports = loadJSON('reports', seedReports);
+            saveJSON('reports', reports);
+            return reports;
         }
 
-        function daysBetween(a, b) {
-          return Math.floor((startOfDay(b) - startOfDay(a)) / MS_DAY);
+        function initAppData(){
+            normalizeBooks();
+            normalizeUsers();
+            normalizeReceipts();
+            normalizeReports();
+            syncBorrowedFromReceipts();
         }
 
-        function chooseRole(role) {
-          state.role = role;
-          document.getElementById('roleScreen').classList.add('hidden');
-          document.getElementById('loginScreen').classList.remove('hidden');
-          document.getElementById('registerLink').style.display = role === 'user' ? 'inline' : 'none';
-          document.getElementById('roleBadge').textContent = role === 'admin' ? 'Admin' : 'Người dùng';
-          document.getElementById('loginUsername').value = '';
-          document.getElementById('loginPassword').value = '';
-        }
+        function getBooks(){ return loadJSON('books', seedBooks); }
+        function getUsers(){ return loadJSON('users', seedUsers); }
+        function getReceipts(){ return loadJSON('receipts', []); }
+        function getReports(){ return loadJSON('reports', seedReports); }
 
-        function backToRole() {
-          document.getElementById('loginScreen').classList.add('hidden');
-          document.getElementById('registerScreen').classList.add('hidden');
-          document.getElementById('roleScreen').classList.remove('hidden');
-        }
+        function saveBooks(books){ saveJSON('books', books); }
+        function saveUsers(users){ saveJSON('users', users); }
+        function saveReceipts(receipts){ saveJSON('receipts', receipts); }
+        function saveReports(reports){ saveJSON('reports', reports); }
 
-        function openRegister() {
-          if (state.role === 'admin') return;
-          document.getElementById('loginScreen').classList.add('hidden');
-          document.getElementById('registerScreen').classList.remove('hidden');
-        }
-
-        function backToLogin() {
-          document.getElementById('registerScreen').classList.add('hidden');
-          document.getElementById('loginScreen').classList.remove('hidden');
-        }
-
-        function getUsers() {
-          return loadJSON('users', seedUsers);
-        }
-
-        function getBooks() {
-          return loadJSON('books', seedBooks);
-        }
-
-        function saveUsers(users) {
-          saveJSON('users', users);
-        }
-
-        function saveBooks(books) {
-          saveJSON('books', books);
-        }
-
-        function getCurrentUser() {
-          const username = localStorage.getItem('currentUser');
-          if (!username) return null;
-          const users = getUsers();
-          return users.find(u => u.username === username) || null;
-        }
-
-        function saveCurrentUser(user) {
-          const users = getUsers();
-          const idx = users.findIndex(u => u.username === user.username);
-          if (idx >= 0) {
-            users[idx] = user;
+        function syncBorrowedFromReceipts(){
+            const users = getUsers();
+            const receipts = getReceipts();
+            users.forEach(u => {
+                u.borrowed = receipts.filter(r => r.username === u.username).map(r => cloneData(r));
+            });
             saveUsers(users);
-          }
-          localStorage.setItem('currentUser', user.username);
         }
 
-        function login() {
-          const username = document.getElementById('loginUsername').value.trim();
-          const password = document.getElementById('loginPassword').value;
-          const users = getUsers();
-          const user = users.find(u => u.username === username && u.password === password && u.role === state.role);
-          if (!user) {
-            alert('Sai thông tin đăng nhập');
-            return;
-          }
-          localStorage.setItem('currentUser', user.username);
-          document.getElementById('loginScreen').classList.add('hidden');
-          document.getElementById('registerScreen').classList.add('hidden');
-          document.getElementById('appScreen').classList.remove('hidden');
-          state.tab = state.role === 'admin' ? 'dashboard' : 'books';
-          syncNotifications();
-          renderApp();
+        function currentUser(){
+            const username = localStorage.getItem('currentUser');
+            if(!username) return null;
+            return getUsers().find(u => u.username === username) || null;
         }
 
-        function register() {
-          if (state.role === 'admin') return;
-          const username = document.getElementById('regUsername').value.trim();
-          const fullName = document.getElementById('regFullName').value.trim();
-          const email = document.getElementById('regEmail').value.trim();
-          const password = document.getElementById('regPassword').value;
-          const confirm = document.getElementById('regConfirm').value;
-          if (!username || !fullName || !password || !confirm) {
-            alert('Vui lòng nhập đầy đủ thông tin');
-            return;
-          }
-          if (password !== confirm) {
-            alert('Mật khẩu xác nhận không khớp');
-            return;
-          }
-          const users = getUsers();
-          if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
-            alert('Tài khoản đã tồn tại');
-            return;
-          }
-          users.push({
-            username,
-            password,
-            role: 'user',
-            fullName,
-            email,
-            phone: '',
-            inbox: [{ text: 'Tài khoản đã được tạo thành công.', at: new Date().toISOString() }],
-            borrowed: []
-          });
-          saveUsers(users);
-          alert('Đăng ký thành công');
-          backToLogin();
-        }
-
-        function forgotPassword() {
-          const username = prompt('Nhập tên tài khoản');
-          if (!username) return;
-          const users = getUsers();
-          const user = users.find(u => u.username === username.trim());
-          if (!user) {
-            alert('Không tìm thấy tài khoản');
-            return;
-          }
-          alert(`Mật khẩu của bạn là: ${user.password}`);
-        }
-
-        function logout() {
-          localStorage.removeItem('currentUser');
-          state.search = '';
-          state.sort = 'name-asc';
-          document.getElementById('appScreen').classList.add('hidden');
-          document.getElementById('roleScreen').classList.remove('hidden');
-        }
-
-        function setTab(tab) {
-          state.tab = tab;
-          renderApp();
-        }
-
-        function renderApp() {
-          const user = getCurrentUser();
-          if (!user) {
-            logout();
-            return;
-          }
-          document.getElementById('sessionInfo').textContent = `${user.fullName || user.username} · ${user.role === 'admin' ? 'Admin' : 'Người dùng'}`;
-          renderSidebar(user);
-          renderSummary(user);
-          renderWorkspace(user);
-        }
-
-        function renderSidebar(user) {
-          const items = user.role === 'admin'
-            ? [
-                ['dashboard', 'Tổng quan'],
-                ['books', 'Quản lý sách'],
-                ['users', 'Quản lý user'],
-                ['stock', 'Tồn kho'],
-                ['inbox', 'Hòm thư']
-              ]
-            : [
-                ['books', 'Danh sách sách'],
-                ['borrowed', 'Sách đã mượn'],
-                ['profile', 'Thông tin cá nhân'],
-                ['inbox', 'Hòm thư']
-              ];
-          document.getElementById('sidebarButtons').innerHTML = items.map(([tab, label]) => `
-            <button class="btn nav-btn ${state.tab === tab ? 'active' : ''}" onclick="setTab('${tab}')">${label}</button>
-          `).join('');
-        }
-
-        function renderSummary(user) {
-          const books = getBooks();
-          const currentBorrowed = getAllBorrowedRecords().filter(r => r.status === 'borrowing');
-          const overdueCount = countOverdueRecords(user.username);
-          const totalFine = calculateFineForUser(user.username);
-          const totalAvailable = books.reduce((s, b) => s + Number(b.quantity || 0), 0);
-          const totalStock = books.reduce((s, b) => s + Number(b.total || 0), 0);
-          const items = user.role === 'admin'
-            ? [
-                ['Tổng đầu sách', books.length, 'Quyển khác nhau trong hệ thống'],
-                ['Tổng bản có sẵn', totalAvailable, 'Số lượng đang còn trong kho'],
-                ['Đang được mượn', totalStock - totalAvailable, 'Số bản đang lưu hành'],
-                ['Quá hạn', countAllOverdueRecords(), 'Các lượt mượn cần xử lý']
-              ]
-            : [
-                ['Đang mượn', currentBorrowed.filter(r => r.username === user.username).length, 'Lượt mượn còn hiệu lực'],
-                ['Quá hạn', overdueCount, 'Lượt cần trả ngay'],
-                ['Tiền phạt', formatMoney(totalFine), 'Tính theo số ngày quá hạn'],
-                ['Hòm thư', user.inbox.length, 'Thông báo mới và lịch sử']
-              ];
-          document.getElementById('summaryRow').innerHTML = items.map(([label, value, foot]) => `
-            <div class="stat-card">
-              <div class="label">${label}</div>
-              <div class="value">${value}</div>
-              <div class="foot">${foot}</div>
-            </div>
-          `).join('');
-        }
-
-        function renderWorkspace(user) {
-          if (user.role === 'admin') {
-            if (state.tab === 'dashboard') return renderAdminDashboard(user);
-            if (state.tab === 'books') return renderBooksPage(user);
-            if (state.tab === 'users') return renderUsersPage(user);
-            if (state.tab === 'stock') return renderStockPage(user);
-            if (state.tab === 'inbox') return renderInboxPage(user);
-          } else {
-            if (state.tab === 'books') return renderBooksPage(user);
-            if (state.tab === 'borrowed') return renderBorrowedPage(user);
-            if (state.tab === 'profile') return renderProfilePage(user);
-            if (state.tab === 'inbox') return renderInboxPage(user);
-          }
-        }
-
-        function renderAdminDashboard(user) {
-          const books = getBooks();
-          const lowStock = books.filter(b => b.quantity <= 2).slice(0, 6);
-          const overdueUsers = getUsers()
-            .filter(u => u.role === 'user')
-            .map(u => ({
-              user: u,
-              overdue: countOverdueRecords(u.username),
-              fine: calculateFineForUser(u.username)
-            }))
-            .filter(x => x.overdue > 0)
-            .sort((a, b) => b.overdue - a.overdue)
-            .slice(0, 6);
-          document.getElementById('workspace').innerHTML = `
-            <div class="panel">
-              <div class="panel-title"><h3>Tổng quan hệ thống</h3><div class="small">Theo dõi nhanh tình trạng thư viện</div></div>
-              <div class="subgrid">
-                <div class="card"><div class="badge">Kho sách</div><div class="card-title">${books.length} đầu sách</div><div class="meta">Tổng bản: ${books.reduce((s,b)=>s+Number(b.total||0),0)}</div></div>
-                <div class="card"><div class="badge">Tồn kho</div><div class="card-title">${books.reduce((s,b)=>s+Number(b.quantity||0),0)} bản</div><div class="meta">Sẵn sàng cho mượn ngay</div></div>
-                <div class="card"><div class="badge">Người dùng</div><div class="card-title">${getUsers().filter(u=>u.role==='user').length}</div><div class="meta">Tài khoản đang hoạt động</div></div>
-                <div class="card"><div class="badge">Quá hạn</div><div class="card-title">${countAllOverdueRecords()}</div><div class="meta">Cần xử lý sớm</div></div>
-              </div>
-            </div>
-            <div class="two-col">
-              <div class="panel">
-                <div class="panel-title"><h3>Sách sắp hết</h3><div class="small">Danh sách cần bổ sung</div></div>
-                ${lowStock.length ? lowStock.map(b => `
-                  <div class="notice-item">
-                    <b>${b.name}</b>
-                    <div class="small">Mã ${b.id} · Còn ${b.quantity}/${b.total} bản · ${b.author}</div>
-                  </div>
-                `).join('') : '<div class="empty">Không có sách sắp hết</div>'}
-              </div>
-              <div class="panel">
-                <div class="panel-title"><h3>Người dùng quá hạn</h3><div class="small">Top cần nhắc nhở</div></div>
-                ${overdueUsers.length ? overdueUsers.map(x => `
-                  <div class="notice-item">
-                    <b>${x.user.fullName || x.user.username}</b>
-                    <div class="small">${x.user.username} · Quá hạn ${x.overdue} lượt · Phạt ${formatMoney(x.fine)}</div>
-                  </div>
-                `).join('') : '<div class="empty">Hiện chưa có người dùng quá hạn</div>'}
-              </div>
-            </div>
-          `;
-        }
-
-        function renderBooksPage(user) {
-          const books = getSortedFilteredBooks();
-          const adminTools = user.role === 'admin' ? `
-            <button class="btn btn-primary" onclick="openBookEditor()">Thêm sách</button>
-          ` : '';
-          document.getElementById('workspace').innerHTML = `
-            <div class="panel">
-              <div class="panel-title">
-                <h3>${user.role === 'admin' ? 'Quản lý sách' : 'Danh sách sách'}</h3>
-                ${adminTools}
-              </div>
-              <div class="toolbar">
-                <input id="searchBox" class="field search" placeholder="Tìm theo tên, mã, tác giả, thể loại" value="${escapeHtml(state.search)}" oninput="updateSearch(this.value)">
-                <button class="btn btn-ghost" onclick="sortBy('name-asc')">A → Z</button>
-                <button class="btn btn-ghost" onclick="sortBy('name-desc')">Z → A</button>
-                <button class="btn btn-ghost" onclick="sortBy('code-asc')">Mã ↑</button>
-                <button class="btn btn-ghost" onclick="sortBy('code-desc')">Mã ↓</button>
-              </div>
-            </div>
-            <div class="book-grid">
-              ${books.length ? books.map(bookCardTemplate).join('') : '<div class="panel"><div class="empty">Không tìm thấy sách phù hợp</div></div>'}
-            </div>
-          `;
-        }
-
-        function bookCardTemplate(book) {
-          const user = getCurrentUser();
-          const borrowed = Number(book.total || 0) - Number(book.quantity || 0);
-          const statusTag = book.quantity > 5 ? 'tag-ok' : book.quantity > 0 ? 'tag-warn' : 'tag-bad';
-          const statusText = book.quantity > 5 ? 'Còn nhiều' : book.quantity > 0 ? 'Sắp hết' : 'Đã hết';
-          const actionHtml = user.role === 'admin'
-            ? `
-              <div class="actions">
-                <button class="btn btn-soft" onclick="openBookEditor('${book.id}')">Sửa</button>
-                <button class="btn btn-ghost" onclick="deleteBook('${book.id}')">Xoá</button>
-              </div>
-            `
-            : `
-              <div class="actions">
-                <button class="btn btn-primary" ${book.quantity <= 0 ? 'disabled style="opacity:.55;cursor:not-allowed"' : ''} onclick="openBorrowModal('${book.id}')">Mượn sách</button>
-              </div>
-            `;
-          return `
-            <div class="card">
-              <div class="badge ${statusTag}">${statusText}</div>
-              <div class="card-title">${escapeHtml(book.name)}</div>
-              <div class="meta">Mã: <b>${escapeHtml(book.id)}</b></div>
-              <div class="meta">Tác giả: ${escapeHtml(book.author)}</div>
-              <div class="meta">Thể loại: ${escapeHtml(book.category)}</div>
-              <div class="meta">Tồn kho: ${book.quantity}/${book.total} · Đang mượn: ${borrowed}</div>
-              ${actionHtml}
-            </div>
-          `;
-        }
-
-        function getSortedFilteredBooks() {
-          const key = state.search.trim().toLowerCase();
-          const books = getBooks().filter(b => {
-            if (!key) return true;
-            return [b.id, b.name, b.author, b.category].some(v => String(v).toLowerCase().includes(key));
-          });
-          books.sort((a, b) => {
-            if (state.sort === 'name-asc') return a.name.localeCompare(b.name, 'vi');
-            if (state.sort === 'name-desc') return b.name.localeCompare(a.name, 'vi');
-            if (state.sort === 'code-asc') return a.id.localeCompare(b.id, 'vi');
-            if (state.sort === 'code-desc') return b.id.localeCompare(a.id, 'vi');
-            return 0;
-          });
-          return books;
-        }
-
-        function updateSearch(value) {
-          state.search = value;
-          renderApp();
-        }
-
-        function sortBy(value) {
-          state.sort = value;
-          renderApp();
-        }
-
-        function openBookEditor(bookId = null) {
-          const book = bookId ? getBooks().find(b => b.id === bookId) : { id: '', name: '', author: '', category: '', total: 1, quantity: 1 };
-          state.editingBook = bookId;
-          openModal(`
-            <div class="modal-card">
-              <div class="modal-header">
-                <h3>${bookId ? 'Sửa sách' : 'Thêm sách'}</h3>
-                <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
-              </div>
-              <div class="form-grid">
-                <input id="bookId" class="field" placeholder="Mã sách" value="${escapeHtml(book.id || '')}" ${bookId ? 'readonly' : ''}>
-                <input id="bookName" class="field" placeholder="Tên sách" value="${escapeHtml(book.name || '')}">
-                <input id="bookAuthor" class="field" placeholder="Tác giả" value="${escapeHtml(book.author || '')}">
-                <input id="bookCategory" class="field" placeholder="Thể loại" value="${escapeHtml(book.category || '')}">
-                <input id="bookTotal" class="field" type="number" min="0" placeholder="Tổng số bản" value="${Number(book.total || 1)}">
-                <input id="bookQuantity" class="field" type="number" min="0" placeholder="Số bản có sẵn" value="${Number(book.quantity || 1)}">
-              </div>
-              <div class="modal-actions">
-                <button class="btn btn-primary" onclick="saveBook()">Lưu</button>
-              </div>
-            </div>
-          `);
-        }
-
-        function saveBook() {
-          const id = document.getElementById('bookId').value.trim();
-          const name = document.getElementById('bookName').value.trim();
-          const author = document.getElementById('bookAuthor').value.trim();
-          const category = document.getElementById('bookCategory').value.trim();
-          const total = Number(document.getElementById('bookTotal').value);
-          const quantity = Number(document.getElementById('bookQuantity').value);
-          if (!id || !name || !author || !category) {
-            alert('Vui lòng nhập đầy đủ thông tin sách');
-            return;
-          }
-          if (!Number.isFinite(total) || total < 0 || !Number.isFinite(quantity) || quantity < 0) {
-            alert('Số lượng không hợp lệ');
-            return;
-          }
-          if (quantity > total) {
-            alert('Số có sẵn không thể lớn hơn tổng số bản');
-            return;
-          }
-          const books = getBooks();
-          const idx = books.findIndex(b => b.id === id);
-          if (state.editingBook && idx >= 0) {
-            const borrowed = books[idx].total - books[idx].quantity;
-            if (total < borrowed) {
-              alert('Tổng số bản mới không được nhỏ hơn số bản đang được mượn');
-              return;
-            }
-            books[idx] = { id, name, author, category, total, quantity };
-          } else {
-            if (idx >= 0) {
-              alert('Mã sách đã tồn tại');
-              return;
-            }
-            books.push({ id, name, author, category, total, quantity });
-          }
-          saveBooks(books);
-          closeModal();
-          renderApp();
-        }
-
-        function deleteBook(id) {
-          const books = getBooks();
-          const book = books.find(b => b.id === id);
-          if (!book) return;
-          const active = getAllBorrowedRecords().filter(r => r.bookId === id && r.status === 'borrowing' && r.qty > r.returnedQty).length;
-          if (active > 0) {
-            alert('Không thể xoá vì vẫn còn lượt mượn đang hoạt động');
-            return;
-          }
-          if (!confirm(`Xoá sách ${book.name}?`)) return;
-          saveBooks(books.filter(b => b.id !== id));
-          renderApp();
-        }
-
-        function openBorrowModal(bookId) {
-          const user = getCurrentUser();
-          if (user.role !== 'user') return;
-          const book = getBooks().find(b => b.id === bookId);
-          if (!book || book.quantity <= 0) {
-            alert('Sách đã hết');
-            return;
-          }
-          state.borrowBookId = bookId;
-          const defaultDate = toDateInput(addDays(new Date(), 7));
-          openModal(`
-            <div class="modal-card">
-              <div class="modal-header">
-                <h3>Mượn sách</h3>
-                <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
-              </div>
-              <div class="panel" style="margin:0 0 14px;background:#fffaf0">
-                <b>${escapeHtml(book.name)}</b>
-                <div class="small">Mã: ${book.id} · Tác giả: ${escapeHtml(book.author)} · Còn ${book.quantity}/${book.total} bản</div>
-              </div>
-              <div class="form-grid">
-                <input id="borrowQty" class="field" type="number" min="1" max="${book.quantity}" value="1" placeholder="Số lượng mượn">
-                <input id="borrowDue" class="field" type="date" value="${defaultDate}">
-              </div>
-              <div class="small" style="margin-top:8px">Chọn số lượng và ngày hẹn trả. Hệ thống sẽ trừ kho ngay khi xác nhận.</div>
-              <div class="modal-actions">
-                <button class="btn btn-primary" onclick="confirmBorrow()">Xác nhận mượn</button>
-              </div>
-            </div>
-          `);
-        }
-
-        function confirmBorrow() {
-          const user = getCurrentUser();
-          if (!user || user.role !== 'user') return;
-          const books = getBooks();
-          const book = books.find(b => b.id === state.borrowBookId);
-          if (!book) return;
-          const qty = Number(document.getElementById('borrowQty').value);
-          const dueDate = document.getElementById('borrowDue').value;
-          if (!Number.isInteger(qty) || qty <= 0) {
-            alert('Số lượng mượn không hợp lệ');
-            return;
-          }
-          if (qty > book.quantity) {
-            alert('Không đủ số lượng trong kho');
-            return;
-          }
-          if (!dueDate) {
-            alert('Vui lòng chọn ngày hẹn trả');
-            return;
-          }
-          const due = new Date(dueDate + 'T00:00:00');
-          const today = startOfDay(new Date());
-          if (due < today) {
-            alert('Ngày hẹn trả không hợp lệ');
-            return;
-          }
-          book.quantity -= qty;
-          const record = normalizeBorrowRecord({
-            id: `BR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            bookId: book.id,
-            title: book.name,
-            qty,
-            returnedQty: 0,
-            borrowDate: toDateInput(new Date()),
-            dueDate,
-            status: 'borrowing',
-            noticeDueSoonSent: false,
-            lastOverdueNoticeDay: 0,
-            finePaid: 0,
-            returnedAt: ''
-          });
-          user.borrowed.unshift(record);
-          user.inbox.unshift({ text: `Mượn sách thành công: ${book.name} (${qty} bản), hẹn trả vào ${dueDate}.`, at: new Date().toISOString() });
-          saveBooks(books);
-          saveCurrentUser(user);
-          state.borrowBookId = null;
-          closeModal();
-          syncNotifications();
-          renderApp();
-        }
-
-        function renderBorrowedPage(user) {
-          const active = user.borrowed.filter(r => r.status === 'borrowing' && r.qty > r.returnedQty);
-          const history = user.borrowed.filter(r => r.status === 'returned' || r.returnedQty >= r.qty);
-          document.getElementById('workspace').innerHTML = `
-            <div class="panel">
-              <div class="panel-title"><h3>Sách đã mượn</h3><div class="small">Trả từng phần hoặc toàn bộ</div></div>
-              ${active.length ? active.map(borrowCardTemplate).join('') : '<div class="empty">Bạn chưa có sách đang mượn</div>'}
-            </div>
-            <div class="panel">
-              <div class="panel-title"><h3>Lịch sử đã trả</h3><div class="small">Các lượt mượn đã hoàn tất</div></div>
-              ${history.length ? history.map(historyCardTemplate).join('') : '<div class="empty">Chưa có lịch sử trả sách</div>'}
-            </div>
-          `;
-        }
-
-        function borrowCardTemplate(rec) {
-          const remaining = rec.qty - rec.returnedQty;
-          const today = startOfDay(new Date());
-          const due = new Date(rec.dueDate + 'T00:00:00');
-          const daysLeft = daysBetween(today, due);
-          const overdueDays = Math.max(0, -daysLeft);
-          const fine = overdueDays * remaining * FINE_PER_DAY;
-          const tagClass = overdueDays > 0 ? 'tag-bad' : daysLeft <= 3 ? 'tag-warn' : 'tag-ok';
-          const tagText = overdueDays > 0 ? `Quá hạn ${overdueDays} ngày` : daysLeft === 0 ? 'Hôm nay đến hạn' : `Còn ${daysLeft} ngày`;
-          return `
-            <div class="card" style="margin-bottom:12px">
-              <div class="badge ${tagClass}">${tagText}</div>
-              <div class="card-title">${escapeHtml(rec.title)}</div>
-              <div class="meta">Mã sách: ${rec.bookId}</div>
-              <div class="meta">Số lượng mượn: ${rec.qty}</div>
-              <div class="meta">Đã trả: ${rec.returnedQty}</div>
-              <div class="meta">Còn lại: ${remaining}</div>
-              <div class="meta">Ngày mượn: ${rec.borrowDate}</div>
-              <div class="meta">Ngày hẹn trả: ${rec.dueDate}</div>
-              <div class="meta">Tiền phạt tạm tính: ${formatMoney(fine)}</div>
-              <div class="actions">
-                <button class="btn btn-primary" onclick="openReturnModal('${rec.id}')">Trả sách</button>
-                <button class="btn btn-ghost" onclick="extendBorrow('${rec.id}')">Gia hạn</button>
-              </div>
-            </div>
-          `;
-        }
-
-        function historyCardTemplate(rec) {
-          return `
-            <div class="card" style="margin-bottom:12px">
-              <div class="badge tag-ok">Đã hoàn tất</div>
-              <div class="card-title">${escapeHtml(rec.title)}</div>
-              <div class="meta">Mã sách: ${rec.bookId}</div>
-              <div class="meta">Số lượng: ${rec.qty}</div>
-              <div class="meta">Ngày mượn: ${rec.borrowDate}</div>
-              <div class="meta">Ngày hẹn trả: ${rec.dueDate}</div>
-              <div class="meta">Ngày trả cuối: ${rec.returnedAt || '-'}</div>
-            </div>
-          `;
-        }
-
-        function openReturnModal(recordId) {
-          const user = getCurrentUser();
-          const rec = user.borrowed.find(r => r.id === recordId);
-          if (!rec) return;
-          const remaining = rec.qty - rec.returnedQty;
-          const today = startOfDay(new Date());
-          const due = new Date(rec.dueDate + 'T00:00:00');
-          const overdueDays = Math.max(0, daysBetween(due, today));
-          const fineNow = overdueDays * remaining * FINE_PER_DAY;
-          state.returnRecordId = recordId;
-          openModal(`
-            <div class="modal-card">
-              <div class="modal-header">
-                <h3>Trả sách</h3>
-                <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
-              </div>
-              <div class="panel" style="margin:0 0 14px;background:#fffaf0">
-                <b>${escapeHtml(rec.title)}</b>
-                <div class="small">Còn lại: ${remaining} bản · Hẹn trả: ${rec.dueDate} · Phạt tạm tính: ${formatMoney(fineNow)}</div>
-              </div>
-              <div class="form-grid">
-                <input id="returnQty" class="field" type="number" min="1" max="${remaining}" value="${remaining}" placeholder="Số lượng trả">
-                <input id="returnNote" class="field" placeholder="Ghi chú nếu có" value="">
-              </div>
-              <div class="modal-actions">
-                <button class="btn btn-primary" onclick="confirmReturn()">Xác nhận trả</button>
-              </div>
-            </div>
-          `);
-        }
-
-        function confirmReturn() {
-          const user = getCurrentUser();
-          if (!user) return;
-          const rec = user.borrowed.find(r => r.id === state.returnRecordId);
-          if (!rec) return;
-          const books = getBooks();
-          const book = books.find(b => b.id === rec.bookId);
-          const qty = Number(document.getElementById('returnQty').value);
-          const remaining = rec.qty - rec.returnedQty;
-          if (!Number.isInteger(qty) || qty <= 0 || qty > remaining) {
-            alert('Số lượng trả không hợp lệ');
-            return;
-          }
-          const today = startOfDay(new Date());
-          const due = new Date(rec.dueDate + 'T00:00:00');
-          const overdueDays = Math.max(0, daysBetween(due, today));
-          const fine = overdueDays * qty * FINE_PER_DAY;
-          rec.returnedQty += qty;
-          rec.finePaid = Number(rec.finePaid || 0) + fine;
-          if (book) book.quantity += qty;
-          if (rec.returnedQty >= rec.qty) {
-            rec.status = 'returned';
-            rec.returnedAt = toDateInput(new Date());
-          }
-          user.inbox.unshift({ text: `Trả sách thành công: ${rec.title} (${qty} bản). ${fine > 0 ? `Tiền phạt: ${formatMoney(fine)}.` : 'Không có tiền phạt.'}`, at: new Date().toISOString() });
-          saveBooks(books);
-          saveCurrentUser(user);
-          state.returnRecordId = null;
-          closeModal();
-          syncNotifications();
-          renderApp();
-        }
-
-        function extendBorrow(recordId) {
-          const user = getCurrentUser();
-          const rec = user.borrowed.find(r => r.id === recordId);
-          if (!rec || rec.status !== 'borrowing') return;
-          const days = Number(prompt('Nhập số ngày gia hạn', '7'));
-          if (!Number.isInteger(days) || days <= 0 || days > 30) {
-            alert('Số ngày gia hạn không hợp lệ');
-            return;
-          }
-          const currentDue = new Date(rec.dueDate + 'T00:00:00');
-          const newDue = addDays(currentDue, days);
-          rec.dueDate = toDateInput(newDue);
-          rec.noticeDueSoonSent = false;
-          rec.lastOverdueNoticeDay = 0;
-          user.inbox.unshift({ text: `Gia hạn mượn sách: ${rec.title} thêm ${days} ngày, hạn mới ${rec.dueDate}.`, at: new Date().toISOString() });
-          saveCurrentUser(user);
-          syncNotifications();
-          renderApp();
-        }
-
-        function renderProfilePage(user) {
-          document.getElementById('workspace').innerHTML = `
-            <div class="panel">
-              <div class="panel-title"><h3>Thông tin cá nhân</h3><div class="small">Chỉ người dùng mới chỉnh sửa</div></div>
-              <div class="form-grid">
-                <input id="profileUsername" class="field" value="${escapeHtml(user.username)}" readonly>
-                <input id="profileFullName" class="field" value="${escapeHtml(user.fullName || '')}" placeholder="Họ và tên">
-                <input id="profileEmail" class="field" value="${escapeHtml(user.email || '')}" placeholder="Email">
-                <input id="profilePhone" class="field" value="${escapeHtml(user.phone || '')}" placeholder="Số điện thoại">
-                <input id="profilePassword" class="field" type="password" placeholder="Mật khẩu mới">
-                <input id="profileConfirm" class="field" type="password" placeholder="Xác nhận mật khẩu mới">
-              </div>
-              <div class="modal-actions" style="justify-content:flex-start">
-                <button class="btn btn-primary" onclick="saveProfile()">Lưu thay đổi</button>
-              </div>
-            </div>
-          `;
-        }
-
-        function saveProfile() {
-          const user = getCurrentUser();
-          const users = getUsers();
-          const idx = users.findIndex(u => u.username === user.username);
-          if (idx < 0) return;
-          const fullName = document.getElementById('profileFullName').value.trim();
-          const email = document.getElementById('profileEmail').value.trim();
-          const phone = document.getElementById('profilePhone').value.trim();
-          const password = document.getElementById('profilePassword').value;
-          const confirm = document.getElementById('profileConfirm').value;
-          if (!fullName) {
-            alert('Họ và tên không được để trống');
-            return;
-          }
-          if (password || confirm) {
-            if (password !== confirm) {
-              alert('Mật khẩu xác nhận không khớp');
-              return;
-            }
-            if (password.length < 3) {
-              alert('Mật khẩu mới quá ngắn');
-              return;
-            }
-            users[idx].password = password;
-          }
-          users[idx].fullName = fullName;
-          users[idx].email = email;
-          users[idx].phone = phone;
-          saveUsers(users);
-          localStorage.setItem('currentUser', user.username);
-          alert('Đã cập nhật thông tin cá nhân');
-          renderApp();
-        }
-
-        function renderInboxPage(user) {
-          const inbox = user.inbox || [];
-          document.getElementById('workspace').innerHTML = `
-            <div class="panel">
-              <div class="panel-title"><h3>Hòm thư</h3><div class="small">Thông báo hệ thống và lịch sử thao tác</div></div>
-              <div class="notice-list">
-                ${inbox.length ? inbox.map(m => `
-                  <div class="notice-item">
-                    <div>${escapeHtml(m.text || m)}</div>
-                    <div class="time">${formatDateTime(m.at || new Date().toISOString())}</div>
-                  </div>
-                `).join('') : '<div class="empty">Chưa có thông báo nào</div>'}
-              </div>
-            </div>
-          `;
-        }
-
-        function renderUsersPage(user) {
-          const users = getUsers().filter(u => u.role === 'user');
-          const rows = users.map(u => {
-            const active = u.borrowed.filter(r => r.status === 'borrowing' && r.qty > r.returnedQty).length;
-            const overdue = countOverdueRecords(u.username);
-            const fine = calculateFineForUser(u.username);
-            return `
-              <tr>
-                <td><b>${escapeHtml(u.username)}</b><div class="small">${escapeHtml(u.fullName || '')}</div></td>
-                <td>${escapeHtml(u.email || '-')}</td>
-                <td>${active}</td>
-                <td>${overdue}</td>
-                <td>${formatMoney(fine)}</td>
-                <td>
-                  <div class="toolbar">
-                    <button class="btn btn-ghost" onclick="openUserDetail('${escapeAttr(u.username)}')">Xem</button>
-                    <button class="btn btn-soft" onclick="resetUserPassword('${escapeAttr(u.username)}')">Đặt lại MK</button>
-                    <button class="btn btn-ghost" onclick="deleteUser('${escapeAttr(u.username)}')">Xoá</button>
-                  </div>
-                </td>
-              </tr>
-            `;
-          }).join('');
-          document.getElementById('workspace').innerHTML = `
-            <div class="panel">
-              <div class="panel-title"><h3>Quản lý user</h3><div class="small">Xem tình trạng mượn và tiền phạt</div></div>
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Tài khoản</th>
-                    <th>Email</th>
-                    <th>Đang mượn</th>
-                    <th>Quá hạn</th>
-                    <th>Phạt</th>
-                    <th>Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>${rows || '<tr><td colspan="6">Không có người dùng</td></tr>'}</tbody>
-              </table>
-            </div>
-          `;
-        }
-
-        function openUserDetail(username) {
-          const user = getUsers().find(u => u.username === username);
-          if (!user) return;
-          const active = user.borrowed.filter(r => r.status === 'borrowing' && r.qty > r.returnedQty);
-          const history = user.borrowed.filter(r => r.status === 'returned' || r.returnedQty >= r.qty);
-          openModal(`
-            <div class="modal-card">
-              <div class="modal-header">
-                <h3>Chi tiết user</h3>
-                <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
-              </div>
-              <div class="panel" style="margin:0 0 14px">
-                <b>${escapeHtml(user.fullName || user.username)}</b>
-                <div class="small">Tài khoản: ${escapeHtml(user.username)} · Email: ${escapeHtml(user.email || '-')} · SĐT: ${escapeHtml(user.phone || '-')}</div>
-              </div>
-              <div class="panel" style="margin:0 0 14px">
-                <b>Sách đang mượn</b>
-                ${active.length ? active.map(r => `<div class="notice-item"><div><b>${escapeHtml(r.title)}</b></div><div class="small">${r.qty - r.returnedQty}/${r.qty} · Hẹn trả ${r.dueDate}</div></div>`).join('') : '<div class="empty">Không có</div>'}
-              </div>
-              <div class="panel" style="margin:0">
-                <b>Lịch sử đã trả</b>
-                ${history.length ? history.map(r => `<div class="notice-item"><div><b>${escapeHtml(r.title)}</b></div><div class="small">Mượn ${r.borrowDate} · Trả ${r.returnedAt || '-'}</div></div>`).join('') : '<div class="empty">Không có</div>'}
-              </div>
-            </div>
-          `);
-        }
-
-        function resetUserPassword(username) {
-          const users = getUsers();
-          const idx = users.findIndex(u => u.username === username);
-          if (idx < 0) return;
-          if (!confirm(`Đặt lại mật khẩu cho ${username} về 123456?`)) return;
-          users[idx].password = '123456';
-          users[idx].inbox = Array.isArray(users[idx].inbox) ? users[idx].inbox : [];
-          users[idx].inbox.unshift({ text: 'Mật khẩu đã được admin đặt lại thành 123456.', at: new Date().toISOString() });
-          saveUsers(users);
-          renderApp();
-        }
-
-        function deleteUser(username) {
-          if (username === 'admin') return;
-          const current = getCurrentUser();
-          if (current && current.username === username) return;
-          const users = getUsers();
-          const user = users.find(u => u.username === username);
-          if (!user) return;
-          if (!confirm(`Xoá tài khoản ${username}?`)) return;
-          saveUsers(users.filter(u => u.username !== username));
-          renderApp();
-        }
-
-        function renderStockPage() {
-          const books = getBooks();
-          const rows = books.map(b => `
-            <tr>
-              <td><b>${escapeHtml(b.id)}</b></td>
-              <td>${escapeHtml(b.name)}</td>
-              <td>${escapeHtml(b.author)}</td>
-              <td>${escapeHtml(b.category)}</td>
-              <td>${b.quantity}</td>
-              <td>${b.total}</td>
-              <td>${b.total - b.quantity}</td>
-            </tr>
-          `).join('');
-          document.getElementById('workspace').innerHTML = `
-            <div class="panel">
-              <div class="panel-title"><h3>Theo dõi tồn kho</h3><div class="small">Tổng số, còn lại và số đang mượn</div></div>
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Mã</th>
-                    <th>Tên sách</th>
-                    <th>Tác giả</th>
-                    <th>Thể loại</th>
-                    <th>Còn lại</th>
-                    <th>Tổng</th>
-                    <th>Đang mượn</th>
-                  </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-              </table>
-            </div>
-          `;
-        }
-
-        function getAllBorrowedRecords() {
-          return getUsers().flatMap(u => (u.borrowed || []).map(r => ({ ...r, username: u.username })));
-        }
-
-        function countOverdueRecords(username) {
-          const user = getUsers().find(u => u.username === username);
-          if (!user) return 0;
-          const today = startOfDay(new Date());
-          return (user.borrowed || []).filter(r => r.status === 'borrowing' && r.qty > r.returnedQty && daysBetween(today, new Date(r.dueDate + 'T00:00:00')) < 0).length;
-        }
-
-        function countAllOverdueRecords() {
-          return getUsers().filter(u => u.role === 'user').reduce((sum, u) => sum + countOverdueRecords(u.username), 0);
-        }
-
-        function calculateFineForUser(username) {
-          const user = getUsers().find(u => u.username === username);
-          if (!user) return 0;
-          const today = startOfDay(new Date());
-          return (user.borrowed || []).reduce((sum, r) => {
-            if (r.status !== 'borrowing' || r.qty <= r.returnedQty) return sum;
-            const remaining = r.qty - r.returnedQty;
-            const due = new Date(r.dueDate + 'T00:00:00');
-            const overdueDays = Math.max(0, daysBetween(due, today));
-            return sum + overdueDays * remaining * FINE_PER_DAY;
-          }, 0);
-        }
-
-        function syncNotifications() {
-          const users = getUsers();
-          const today = startOfDay(new Date());
-          let changed = false;
-          users.forEach(u => {
-            if (!Array.isArray(u.borrowed)) return;
-            u.borrowed.forEach(r => {
-              if (r.status !== 'borrowing') return;
-              const remaining = r.qty - r.returnedQty;
-              if (remaining <= 0) return;
-              const due = new Date(r.dueDate + 'T00:00:00');
-              const daysLeft = daysBetween(today, due);
-              const overdueDays = Math.max(0, -daysLeft);
-              if (daysLeft >= 0 && daysLeft <= 3 && !r.noticeDueSoonSent) {
-                u.inbox.unshift({ text: `Nhắc nhở: sách ${r.title} sắp đến hạn trả vào ${r.dueDate}.`, at: new Date().toISOString() });
-                r.noticeDueSoonSent = true;
-                changed = true;
-              }
-              if (overdueDays >= 1 && (r.lastOverdueNoticeDay === 0 || overdueDays - r.lastOverdueNoticeDay >= 3)) {
-                u.inbox.unshift({ text: `Sách ${r.title} đã quá hạn ${overdueDays} ngày. Tiền phạt tạm tính: ${formatMoney(overdueDays * remaining * FINE_PER_DAY)}.`, at: new Date().toISOString() });
-                r.lastOverdueNoticeDay = overdueDays;
-                changed = true;
-              }
-            });
-          });
-          if (changed) saveUsers(users);
-        }
-
-        function formatMoney(value) {
-          const n = Number(value || 0);
-          return n.toLocaleString('vi-VN') + ' đ';
-        }
-
-        function formatDateTime(value) {
-          if (!value) return '';
-          const d = new Date(value);
-          if (Number.isNaN(d.getTime())) return String(value);
-          return d.toLocaleString('vi-VN');
-        }
-
-        function escapeHtml(text) {
-          return String(text ?? '')
-            .replaceAll('&', '&amp;')
-            .replaceAll('<', '&lt;')
-            .replaceAll('>', '&gt;')
-            .replaceAll('"', '&quot;')
-            .replaceAll("'", '&#39;');
-        }
-
-        function escapeAttr(text) {
-          return escapeHtml(text).replaceAll('`', '&#96;');
-        }
-
-        function openModal(html) {
-          document.getElementById('modalOverlay').classList.remove('hidden');
-          const box = document.getElementById('modalBox');
-          box.classList.remove('hidden');
-          box.innerHTML = html;
-        }
-
-        function closeModal() {
-          document.getElementById('modalOverlay').classList.add('hidden');
-          const box = document.getElementById('modalBox');
-          box.classList.add('hidden');
-          box.innerHTML = '';
-        }
-
-        function showInitialScreen() {
-          normalizeData();
-          const current = getCurrentUser();
-          if (current) {
+        function chooseRole(role){
+            state.role = role;
             document.getElementById('roleScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('registerLink').style.display = role === 'user' ? 'inline' : 'none';
+            document.getElementById('roleBadge').textContent = role === 'admin' ? 'Admin' : role === 'librarian' ? 'Thủ thư' : 'Người dùng';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        function backToRole(){
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('roleScreen').classList.remove('hidden');
+        }
+
+        function openRegister(){
+            if(state.role !== 'user') return;
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.remove('hidden');
+        }
+
+        function backToLogin(){
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        function toDateInput(date){
+            const d = new Date(date);
+            const tz = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+            return tz.toISOString().slice(0,10);
+        }
+
+        function addDays(date, days){
+            const d = new Date(date);
+            d.setDate(d.getDate() + days);
+            return d;
+        }
+
+        function startOfDay(date){
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+
+        function daysBetween(a, b){
+            return Math.floor((startOfDay(b) - startOfDay(a)) / MS_DAY);
+        }
+
+        function formatMoney(value){
+            return Number(value || 0).toLocaleString('vi-VN') + ' đ';
+        }
+
+        function formatDateTime(value){
+            const d = new Date(value);
+            if(Number.isNaN(d.getTime())) return String(value || '');
+            return d.toLocaleString('vi-VN');
+        }
+
+        function escapeHtml(text){
+            return String(text ?? '')
+                .replaceAll('&','&amp;')
+                .replaceAll('<','&lt;')
+                .replaceAll('>','&gt;')
+                .replaceAll('"','&quot;')
+                .replaceAll("'",'&#39;');
+        }
+
+        function escapeAttr(text){
+            return escapeHtml(text).replaceAll('`','&#96;');
+        }
+
+        function openModal(html){
+            document.getElementById('modalOverlay').classList.remove('hidden');
+            const box = document.getElementById('modalBox');
+            box.classList.remove('hidden');
+            box.innerHTML = html;
+        }
+
+        function closeModal(){
+            document.getElementById('modalOverlay').classList.add('hidden');
+            const box = document.getElementById('modalBox');
+            box.classList.add('hidden');
+            box.innerHTML = '';
+        }
+
+        function sendOTP(email, purpose){
+            const otp = String(Math.floor(100000 + Math.random() * 900000));
+            state.otpTarget = email;
+            state.otpCode = otp;
+            state.otpPurpose = purpose;
+            localStorage.setItem(`otp_${email}`, JSON.stringify({
+                otp,
+                purpose,
+                expires: Date.now() + 5 * 60 * 1000
+            }));
+            alert(`OTP đã được gửi tới ${email}.\nMã OTP (mô phỏng): ${otp}`);
+        }
+
+        function verifyOTP(email, input){
+            const raw = localStorage.getItem(`otp_${email}`);
+            if(!raw) return false;
+            try{
+                const data = JSON.parse(raw);
+                if(Date.now() > data.expires) return false;
+                return String(data.otp) === String(input).trim();
+            }catch{
+                return false;
+            }
+        }
+
+        function login(){
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const users = getUsers();
+            const user = users.find(u => u.username === username && u.password === password && u.role === state.role);
+            if(!user){
+                alert('Sai thông tin đăng nhập');
+                return;
+            }
+            localStorage.setItem('currentUser', user.username);
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('registerScreen').classList.add('hidden');
             document.getElementById('appScreen').classList.remove('hidden');
-            state.role = current.role;
-            state.tab = current.role === 'admin' ? 'dashboard' : 'books';
-            syncNotifications();
+            state.tab = user.role === 'user' ? 'books' : 'dashboard';
+            syncReminders();
             renderApp();
-          }
+        }
+
+        function register(){
+            if(state.role !== 'user') return;
+            const username = document.getElementById('regUsername').value.trim();
+            const fullName = document.getElementById('regFullName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirm').value;
+
+            if(!username || !fullName || !email || !password || !confirm){
+                alert('Vui lòng nhập đầy đủ thông tin');
+                return;
+            }
+            if(password !== confirm){
+                alert('Mật khẩu xác nhận không khớp');
+                return;
+            }
+
+            const users = getUsers();
+            if(users.some(u => u.username.toLowerCase() === username.toLowerCase())){
+                alert('Tài khoản đã tồn tại');
+                return;
+            }
+
+            sendOTP(email, 'register');
+            const otp = prompt('Nhập OTP đã gửi về Gmail của bạn:');
+            if(!verifyOTP(email, otp)){
+                alert('OTP không hợp lệ');
+                return;
+            }
+
+            users.push({
+                username,
+                password,
+                role:'user',
+                fullName,
+                email,
+                phone:'',
+                inbox:[
+                    { text:'Tài khoản đã được tạo thành công.', at:new Date().toISOString() }
+                ],
+                borrowed:[]
+            });
+            saveUsers(users);
+            alert('Đăng ký thành công');
+            backToLogin();
+        }
+
+        function forgotPassword(){
+            const username = prompt('Nhập tên tài khoản');
+            if(!username) return;
+            const users = getUsers();
+            const user = users.find(u => u.username === username.trim());
+            if(!user){
+                alert('Không tìm thấy tài khoản');
+                return;
+            }
+            if(!user.email){
+                alert('Tài khoản này chưa có email để nhận OTP');
+                return;
+            }
+            sendOTP(user.email, 'forgot_password');
+            const otp = prompt('Nhập OTP đã gửi về Gmail:');
+            if(!verifyOTP(user.email, otp)){
+                alert('OTP không hợp lệ');
+                return;
+            }
+            alert(`Mật khẩu của bạn là: ${user.password}`);
+        }
+
+        function logout(){
+            localStorage.removeItem('currentUser');
+            state.search = '';
+            state.sort = 'name-asc';
+            document.getElementById('appScreen').classList.add('hidden');
+            document.getElementById('roleScreen').classList.remove('hidden');
+        }
+
+        function setTab(tab){
+            state.tab = tab;
+            renderApp();
+        }
+
+        function renderApp(){
+            const user = currentUser();
+            if(!user){
+                logout();
+                return;
+            }
+            document.getElementById('sessionInfo').textContent = `${user.fullName || user.username} · ${user.role === 'admin' ? 'Admin' : user.role === 'librarian' ? 'Thủ thư' : 'Người dùng'}`;
+            renderSidebar(user);
+            renderSummary(user);
+            renderWorkspace(user);
+        }
+
+        function renderSidebar(user){
+            let items = [];
+            if(user.role === 'user'){
+                items = [
+                    ['books','Danh sách sách'],
+                    ['receipts','Phiếu mượn'],
+                    ['profile','Thông tin cá nhân'],
+                    ['inbox','Hòm thư']
+                ];
+            }else if(user.role === 'librarian'){
+                items = [
+                    ['dashboard','Tổng quan'],
+                    ['books','Quản lý sách'],
+                    ['receipts','Phiếu mượn'],
+                    ['users','Quản lý người dùng'],
+                    ['stock','Tồn kho'],
+                    ['inbox','Hòm thư']
+                ];
+            }else{
+                items = [
+                    ['dashboard','Tổng quan'],
+                    ['books','Danh sách sách'],
+                    ['librarians','Quản lý thủ thư'],
+                    ['reports','Báo cáo'],
+                    ['inbox','Hòm thư']
+                ];
+            }
+            document.getElementById('sidebarButtons').innerHTML = items.map(([tab,label]) => `
+                <button class="btn nav-btn ${state.tab === tab ? 'active' : ''}" onclick="setTab('${tab}')">${label}</button>
+            `).join('');
+        }
+
+        function allReceipts(){
+            return getReceipts();
+        }
+
+        function countActiveReceipts(){
+            return allReceipts().filter(r => r.status === 'borrowing' && r.qty > r.returnedQty).length;
+        }
+
+        function countOverdueReceipts(){
+            const today = startOfDay(new Date());
+            return allReceipts().filter(r => {
+                if(r.status !== 'borrowing') return false;
+                if(r.qty <= r.returnedQty) return false;
+                return daysBetween(today, new Date(r.dueDate + 'T00:00:00')) < 0;
+            }).length;
+        }
+
+        function calculateTotalFine(){
+            const today = startOfDay(new Date());
+            return allReceipts().reduce((sum, r) => {
+                if(r.status !== 'borrowing' || r.qty <= r.returnedQty) return sum;
+                const remaining = r.qty - r.returnedQty;
+                const due = new Date(r.dueDate + 'T00:00:00');
+                const overdueDays = Math.max(0, daysBetween(due, today));
+                return sum + overdueDays * remaining * FINE_PER_DAY;
+            }, 0);
+        }
+
+        function renderSummary(user){
+            const books = getBooks();
+            const receipts = allReceipts();
+            const totalBooks = books.length;
+            const totalStock = books.reduce((s,b) => s + Number(b.total || 0), 0);
+            const available = books.reduce((s,b) => s + Number(b.quantity || 0), 0);
+            const borrowedCount = totalStock - available;
+
+            let items = [];
+            if(user.role === 'user'){
+                const my = receipts.filter(r => r.username === user.username);
+                const active = my.filter(r => r.status === 'borrowing' && r.qty > r.returnedQty).length;
+                const overdue = my.filter(r => {
+                    if(r.status !== 'borrowing' || r.qty <= r.returnedQty) return false;
+                    return daysBetween(startOfDay(new Date()), new Date(r.dueDate + 'T00:00:00')) < 0;
+                }).length;
+                const fine = my.reduce((sum, r) => {
+                    if(r.status !== 'borrowing' || r.qty <= r.returnedQty) return sum;
+                    const remaining = r.qty - r.returnedQty;
+                    const overdueDays = Math.max(0, daysBetween(new Date(r.dueDate + 'T00:00:00'), startOfDay(new Date())));
+                    return sum + overdueDays * remaining * FINE_PER_DAY;
+                }, 0);
+                items = [
+                    ['Sách đang mượn', active, 'Phiếu mượn còn hiệu lực'],
+                    ['Quá hạn', overdue, 'Cần trả sớm'],
+                    ['Tiền phạt', formatMoney(fine), 'Tạm tính theo ngày'],
+                    ['Thông báo', user.inbox.length, 'Hòm thư cá nhân']
+                ];
+            }else if(user.role === 'librarian'){
+                items = [
+                    ['Đầu sách', totalBooks, 'Sách đang quản lý'],
+                    ['Bản còn lại', available, 'Trong kho hiện có'],
+                    ['Đang mượn', borrowedCount, 'Số bản đã xuất'],
+                    ['Quá hạn', countOverdueReceipts(), 'Cần nhắc trả']
+                ];
+            }else{
+                const librarians = getUsers().filter(u => u.role === 'librarian').length;
+                const reports = getReports().length;
+                items = [
+                    ['Thủ thư', librarians, 'Tài khoản thủ thư'],
+                    ['Đầu sách', totalBooks, 'Sách trong hệ thống'],
+                    ['Phiếu mượn', receipts.length, 'Tất cả phiếu'],
+                    ['Báo cáo', reports, 'Báo cáo giả lập']
+                ];
+            }
+            document.getElementById('summaryRow').innerHTML = items.map(([label, value, foot]) => `
+                <div class="stat-card">
+                    <div class="label">${label}</div>
+                    <div class="value">${value}</div>
+                    <div class="foot">${foot}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderWorkspace(user){
+            if(user.role === 'user'){
+                if(state.tab === 'books') return renderBooksPage(user);
+                if(state.tab === 'receipts') return renderMyReceiptsPage(user);
+                if(state.tab === 'profile') return renderProfilePage(user);
+                if(state.tab === 'inbox') return renderInboxPage(user);
+            }else if(user.role === 'librarian'){
+                if(state.tab === 'dashboard') return renderLibrarianDashboard(user);
+                if(state.tab === 'books') return renderBooksPage(user);
+                if(state.tab === 'receipts') return renderAllReceiptsPage(user);
+                if(state.tab === 'users') return renderUsersPage(user);
+                if(state.tab === 'stock') return renderStockPage(user);
+                if(state.tab === 'inbox') return renderInboxPage(user);
+            }else{
+                if(state.tab === 'dashboard') return renderAdminDashboard(user);
+                if(state.tab === 'books') return renderBooksPage(user);
+                if(state.tab === 'librarians') return renderLibrariansPage(user);
+                if(state.tab === 'reports') return renderReportsPage(user);
+                if(state.tab === 'inbox') return renderInboxPage(user);
+            }
+        }
+
+        function filteredSortedBooks(){
+            const key = state.search.trim().toLowerCase();
+            const books = getBooks().filter(b => {
+                if(!key) return true;
+                return [b.id,b.name,b.author,b.category].some(v => String(v).toLowerCase().includes(key));
+            });
+            books.sort((a,b) => {
+                if(state.sort === 'name-asc') return a.name.localeCompare(b.name, 'vi');
+                if(state.sort === 'name-desc') return b.name.localeCompare(a.name, 'vi');
+                if(state.sort === 'code-asc') return a.id.localeCompare(b.id, 'vi');
+                if(state.sort === 'code-desc') return b.id.localeCompare(a.id, 'vi');
+                return 0;
+            });
+            return books;
+        }
+
+        function updateSearch(value){
+            state.search = value;
+            renderApp();
+        }
+
+        function sortBy(value){
+            state.sort = value;
+            renderApp();
+        }
+
+        function renderBooksPage(user){
+            const books = filteredSortedBooks();
+            document.getElementById('workspace').innerHTML = `
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>${user.role === 'user' ? 'Danh sách sách' : 'Quản lý sách'}</h3>
+                        ${user.role === 'librarian' ? `<button class="btn btn-primary" onclick="openBookEditor()">Thêm sách</button>` : ''}
+                    </div>
+                    <div class="toolbar">
+                        <input id="searchBox" class="field search" placeholder="Tìm theo tên, mã, tác giả, thể loại" value="${escapeHtml(state.search)}" oninput="updateSearch(this.value)">
+                        <button class="btn btn-ghost" onclick="sortBy('name-asc')">A → Z</button>
+                        <button class="btn btn-ghost" onclick="sortBy('name-desc')">Z → A</button>
+                        <button class="btn btn-ghost" onclick="sortBy('code-asc')">Mã ↑</button>
+                        <button class="btn btn-ghost" onclick="sortBy('code-desc')">Mã ↓</button>
+                    </div>
+                </div>
+                <div class="book-grid">
+                    ${books.length ? books.map(bookCardTemplate).join('') : '<div class="panel"><div class="empty">Không tìm thấy sách phù hợp</div></div>'}
+                </div>
+            `;
+        }
+
+        function bookCardTemplate(book){
+            const user = currentUser();
+            const borrowed = Number(book.total || 0) - Number(book.quantity || 0);
+            const tagClass = book.quantity > 5 ? 'tag-ok' : book.quantity > 0 ? 'tag-warn' : 'tag-bad';
+            const tagText = book.quantity > 5 ? 'Còn nhiều' : book.quantity > 0 ? 'Sắp hết' : 'Đã hết';
+            return `
+                <div class="card" onclick="openBookDetail('${escapeAttr(book.id)}')">
+                    <div class="badge ${tagClass}">${tagText}</div>
+                    <div class="card-title">${escapeHtml(book.name)}</div>
+                    <div class="meta">Mã: <b>${escapeHtml(book.id)}</b></div>
+                    <div class="meta">Tác giả: ${escapeHtml(book.author)}</div>
+                    <div class="meta">Thể loại: ${escapeHtml(book.category)}</div>
+                    <div class="meta">Tồn kho: ${book.quantity}/${book.total} · Đang mượn: ${borrowed}</div>
+                    <div class="small">Bấm để xem chi tiết</div>
+                </div>
+            `;
+        }
+
+        function openBookDetail(id){
+            const book = getBooks().find(x => x.id === id);
+            if(!book) return;
+            const user = currentUser();
+            const borrowed = Number(book.total || 0) - Number(book.quantity || 0);
+            const actionBorrow = user.role === 'user' ? `<button class="btn btn-primary" onclick="openBorrowModal('${escapeAttr(book.id)}')">Mượn sách</button>` : '';
+            const actionEdit = user.role === 'librarian' ? `<button class="btn btn-soft" onclick="openBookEditor('${escapeAttr(book.id)}')">Sửa sách</button><button class="btn btn-ghost" onclick="deleteBook('${escapeAttr(book.id)}')">Xoá sách</button>` : '';
+            openModal(`
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h3>Thông tin sách</h3>
+                        <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+                    </div>
+                    <div class="panel" style="margin:0 0 14px;background:#fffdf5">
+                        <div class="card-title">${escapeHtml(book.name)}</div>
+                        <div class="meta">Mã sách: <b>${escapeHtml(book.id)}</b></div>
+                        <div class="meta">Tác giả: ${escapeHtml(book.author)}</div>
+                        <div class="meta">Thể loại: ${escapeHtml(book.category)}</div>
+                        <div class="meta">Tồn kho: ${book.quantity}/${book.total}</div>
+                        <div class="meta">Đang mượn: ${borrowed}</div>
+                        <div class="hr"></div>
+                        <div class="meta"><b>Mô tả:</b> ${escapeHtml(book.desc || 'Chưa có mô tả.')}</div>
+                    </div>
+                    <div class="modal-actions" style="justify-content:flex-start">
+                        ${actionBorrow}
+                        ${actionEdit}
+                    </div>
+                </div>
+            `);
+        }
+
+        function openBookEditor(bookId = null){
+            const user = currentUser();
+            if(user.role !== 'librarian') return;
+            const book = bookId ? getBooks().find(b => b.id === bookId) : { id:'', name:'', author:'', category:'', total:1, quantity:1, desc:'' };
+            state.editingBook = bookId;
+            openModal(`
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h3>${bookId ? 'Sửa sách' : 'Thêm sách'}</h3>
+                        <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+                    </div>
+                    <div class="form-grid">
+                        <input id="bookId" class="field" placeholder="Mã sách" value="${escapeHtml(book.id || '')}" ${bookId ? 'readonly' : ''}>
+                        <input id="bookName" class="field" placeholder="Tên sách" value="${escapeHtml(book.name || '')}">
+                        <input id="bookAuthor" class="field" placeholder="Tác giả" value="${escapeHtml(book.author || '')}">
+                        <input id="bookCategory" class="field" placeholder="Thể loại" value="${escapeHtml(book.category || '')}">
+                        <input id="bookTotal" class="field" type="number" min="0" placeholder="Tổng số bản" value="${Number(book.total || 1)}">
+                        <input id="bookQuantity" class="field" type="number" min="0" placeholder="Số bản có sẵn" value="${Number(book.quantity || 1)}">
+                    </div>
+                    <textarea id="bookDesc" class="field" placeholder="Mô tả sách">${escapeHtml(book.desc || '')}</textarea>
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" onclick="saveBook()">Lưu</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function saveBook(){
+            const user = currentUser();
+            if(user.role !== 'librarian') return;
+
+            const id = document.getElementById('bookId').value.trim();
+            const name = document.getElementById('bookName').value.trim();
+            const author = document.getElementById('bookAuthor').value.trim();
+            const category = document.getElementById('bookCategory').value.trim();
+            const total = Number(document.getElementById('bookTotal').value);
+            const quantity = Number(document.getElementById('bookQuantity').value);
+            const desc = document.getElementById('bookDesc').value.trim();
+
+            if(!id || !name || !author || !category){
+                alert('Vui lòng nhập đầy đủ thông tin sách');
+                return;
+            }
+            if(!Number.isFinite(total) || total < 0 || !Number.isFinite(quantity) || quantity < 0){
+                alert('Số lượng không hợp lệ');
+                return;
+            }
+            if(quantity > total){
+                alert('Số bản có sẵn không thể lớn hơn tổng số bản');
+                return;
+            }
+
+            const books = getBooks();
+            const idx = books.findIndex(b => b.id === id);
+
+            if(state.editingBook && idx >= 0){
+                const borrowed = books[idx].total - books[idx].quantity;
+                if(total < borrowed){
+                    alert('Tổng số bản mới không được nhỏ hơn số bản đang được mượn');
+                    return;
+                }
+                books[idx] = { id, name, author, category, total, quantity, desc };
+            }else{
+                if(idx >= 0){
+                    alert('Mã sách đã tồn tại');
+                    return;
+                }
+                books.push({ id, name, author, category, total, quantity, desc });
+            }
+
+            saveBooks(books);
+            closeModal();
+            renderApp();
+        }
+
+        function deleteBook(id){
+            const user = currentUser();
+            if(user.role !== 'librarian') return;
+            const book = getBooks().find(b => b.id === id);
+            if(!book) return;
+            const receipts = getReceipts().filter(r => r.bookId === id && r.status === 'borrowing' && r.qty > r.returnedQty);
+            if(receipts.length > 0){
+                alert('Không thể xoá vì vẫn còn phiếu mượn đang hoạt động');
+                return;
+            }
+            if(!confirm(`Xoá sách ${book.name}?`)) return;
+            saveBooks(getBooks().filter(b => b.id !== id));
+            closeModal();
+            renderApp();
+        }
+
+        function openBorrowModal(bookId){
+            const user = currentUser();
+            if(user.role !== 'user') return;
+            const book = getBooks().find(b => b.id === bookId);
+            if(!book) return;
+            if(book.quantity <= 0){
+                alert('Sách đã hết');
+                return;
+            }
+            state.borrowBookId = bookId;
+            const defaultDate = toDateInput(addDays(new Date(), 7));
+            openModal(`
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h3>Mượn sách</h3>
+                        <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+                    </div>
+                    <div class="panel" style="margin:0 0 14px;background:#fffaf0">
+                        <b>${escapeHtml(book.name)}</b>
+                        <div class="small">Mã: ${escapeHtml(book.id)} · Tác giả: ${escapeHtml(book.author)} · Còn ${book.quantity}/${book.total} bản</div>
+                        <div class="meta">${escapeHtml(book.desc || '')}</div>
+                    </div>
+                    <div class="form-grid">
+                        <input id="borrowQty" class="field" type="number" min="1" max="${book.quantity}" value="1" placeholder="Số lượng mượn">
+                        <input id="borrowDue" class="field" type="date" value="${defaultDate}">
+                    </div>
+                    <div class="small" style="margin-top:8px">Chọn số lượng và ngày hẹn trả. Phiếu mượn sẽ được tạo ngay sau khi xác nhận.</div>
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" onclick="confirmBorrow()">Xác nhận mượn</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function confirmBorrow(){
+            const user = currentUser();
+            if(user.role !== 'user') return;
+
+            const bookId = state.borrowBookId;
+            const books = getBooks();
+            const book = books.find(b => b.id === bookId);
+            if(!book) return;
+
+            const qty = Number(document.getElementById('borrowQty').value);
+            const dueDate = document.getElementById('borrowDue').value;
+
+            if(!Number.isInteger(qty) || qty <= 0){
+                alert('Số lượng mượn không hợp lệ');
+                return;
+            }
+            if(qty > book.quantity){
+                alert('Không đủ số lượng trong kho');
+                return;
+            }
+            if(!dueDate){
+                alert('Vui lòng chọn ngày hẹn trả');
+                return;
+            }
+            const due = new Date(dueDate + 'T00:00:00');
+            const today = startOfDay(new Date());
+            if(due < today){
+                alert('Ngày hẹn trả không hợp lệ');
+                return;
+            }
+
+            book.quantity -= qty;
+
+            const receipt = normalizeReceipt({
+                id:`PM-${Date.now()}-${Math.floor(Math.random()*1000)}`,
+                username:user.username,
+                fullName:user.fullName || user.username,
+                bookId:book.id,
+                title:book.name,
+                qty,
+                returnedQty:0,
+                borrowDate:toDateInput(new Date()),
+                dueDate,
+                status:'borrowing',
+                finePaid:0,
+                noticeDueSoonSent:false,
+                lastOverdueNoticeDay:0,
+                returnedAt:''
+            });
+
+            const receipts = getReceipts();
+            receipts.unshift(receipt);
+            saveReceipts(receipts);
+
+            const users = getUsers();
+            const uidx = users.findIndex(u => u.username === user.username);
+            if(uidx >= 0){
+                users[uidx].inbox = Array.isArray(users[uidx].inbox) ? users[uidx].inbox : [];
+                users[uidx].inbox.unshift({ text:`Mượn sách thành công: ${book.name} (${qty} bản). Phiếu mượn: ${receipt.id}. Hẹn trả vào ${dueDate}.`, at:new Date().toISOString() });
+                saveUsers(users);
+            }
+
+            notifyRole('librarian', `Có phiếu mượn mới: ${receipt.id} · ${receipt.fullName} mượn ${receipt.title} (${qty} bản) · Hẹn trả ${dueDate}.`);
+            syncBorrowedFromReceipts();
+            saveBooks(books);
+            state.borrowBookId = null;
+            closeModal();
+            syncReminders();
+            renderApp();
+        }
+
+        function notifyRole(role, text){
+            const users = getUsers();
+            users.forEach(u => {
+                if(u.role === role){
+                    u.inbox = Array.isArray(u.inbox) ? u.inbox : [];
+                    u.inbox.unshift({ text, at:new Date().toISOString() });
+                }
+            });
+            saveUsers(users);
+        }
+
+        function openReturnModal(receiptId){
+            const user = currentUser();
+            const receipt = getReceipts().find(r => r.id === receiptId && r.username === user.username);
+            if(!receipt) return;
+            const remaining = receipt.qty - receipt.returnedQty;
+            if(remaining <= 0) return;
+
+            const today = startOfDay(new Date());
+            const due = new Date(receipt.dueDate + 'T00:00:00');
+            const overdueDays = Math.max(0, daysBetween(due, today));
+            const fine = overdueDays * remaining * FINE_PER_DAY;
+
+            state.returnReceiptId = receiptId;
+            openModal(`
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h3>Trả sách</h3>
+                        <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+                    </div>
+                    <div class="panel" style="margin:0 0 14px;background:#fffaf0">
+                        <b>${escapeHtml(receipt.title)}</b>
+                        <div class="small">Phiếu: ${receipt.id} · Còn lại: ${remaining} bản · Hẹn trả: ${receipt.dueDate}</div>
+                        <div class="meta">Tiền phạt tạm tính: ${formatMoney(fine)}</div>
+                    </div>
+                    <div class="form-grid">
+                        <input id="returnQty" class="field" type="number" min="1" max="${remaining}" value="${remaining}" placeholder="Số lượng trả">
+                        <input id="returnNote" class="field" placeholder="Ghi chú nếu có">
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" onclick="confirmReturn()">Xác nhận trả</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function confirmReturn(){
+            const user = currentUser();
+            if(user.role !== 'user') return;
+
+            const receiptId = state.returnReceiptId;
+            const receipts = getReceipts();
+            const receipt = receipts.find(r => r.id === receiptId && r.username === user.username);
+            if(!receipt) return;
+
+            const qty = Number(document.getElementById('returnQty').value);
+            const remaining = receipt.qty - receipt.returnedQty;
+            if(!Number.isInteger(qty) || qty <= 0 || qty > remaining){
+                alert('Số lượng trả không hợp lệ');
+                return;
+            }
+
+            const books = getBooks();
+            const book = books.find(b => b.id === receipt.bookId);
+            if(book) book.quantity += qty;
+
+            const today = startOfDay(new Date());
+            const due = new Date(receipt.dueDate + 'T00:00:00');
+            const overdueDays = Math.max(0, daysBetween(due, today));
+            const fine = overdueDays * qty * FINE_PER_DAY;
+
+            receipt.returnedQty += qty;
+            receipt.finePaid = Number(receipt.finePaid || 0) + fine;
+
+            if(receipt.returnedQty >= receipt.qty){
+                receipt.status = 'returned';
+                receipt.returnedAt = toDateInput(new Date());
+            }
+
+            saveReceipts(receipts);
+            saveBooks(books);
+
+            const users = getUsers();
+            const uidx = users.findIndex(u => u.username === user.username);
+            if(uidx >= 0){
+                users[uidx].inbox = Array.isArray(users[uidx].inbox) ? users[uidx].inbox : [];
+                users[uidx].inbox.unshift({
+                    text:`Trả sách thành công: ${receipt.title} (${qty} bản). ${fine > 0 ? `Tiền phạt: ${formatMoney(fine)}.` : 'Không có tiền phạt.'}`,
+                    at:new Date().toISOString()
+                });
+                saveUsers(users);
+            }
+
+            notifyRole('librarian', `Phiếu trả sách: ${receipt.id} · ${receipt.fullName} trả ${qty} bản của ${receipt.title}. ${fine > 0 ? `Phạt ${formatMoney(fine)}.` : ''}`);
+            syncBorrowedFromReceipts();
+            state.returnReceiptId = null;
+            closeModal();
+            syncReminders();
+            renderApp();
+        }
+
+        function extendBorrow(receiptId){
+            const user = currentUser();
+            if(user.role !== 'user') return;
+            const receipts = getReceipts();
+            const receipt = receipts.find(r => r.id === receiptId && r.username === user.username);
+            if(!receipt || receipt.status !== 'borrowing') return;
+
+            const days = Number(prompt('Nhập số ngày gia hạn', '7'));
+            if(!Number.isInteger(days) || days <= 0 || days > 30){
+                alert('Số ngày gia hạn không hợp lệ');
+                return;
+            }
+
+            const newDue = addDays(new Date(receipt.dueDate + 'T00:00:00'), days);
+            receipt.dueDate = toDateInput(newDue);
+            receipt.noticeDueSoonSent = false;
+            receipt.lastOverdueNoticeDay = 0;
+
+            saveReceipts(receipts);
+            syncBorrowedFromReceipts();
+
+            const users = getUsers();
+            const uidx = users.findIndex(u => u.username === user.username);
+            if(uidx >= 0){
+                users[uidx].inbox.unshift({ text:`Gia hạn phiếu ${receipt.id} thêm ${days} ngày. Hạn mới: ${receipt.dueDate}.`, at:new Date().toISOString() });
+                saveUsers(users);
+            }
+
+            notifyRole('librarian', `Phiếu ${receipt.id} của ${receipt.fullName} đã được gia hạn đến ${receipt.dueDate}.`);
+            renderApp();
+        }
+
+        function renderMyReceiptsPage(user){
+            const receipts = getReceipts().filter(r => r.username === user.username);
+            document.getElementById('workspace').innerHTML = `
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>Phiếu mượn của tôi</h3>
+                        <div class="small">Chỉ hiển thị phiếu của tài khoản hiện tại</div>
+                    </div>
+                    ${receipts.length ? receipts.map(receiptCardTemplateUser).join('') : '<div class="empty">Bạn chưa có phiếu mượn nào</div>'}
+                </div>
+            `;
+        }
+
+        function receiptCardTemplateUser(r){
+            const remaining = r.qty - r.returnedQty;
+            const today = startOfDay(new Date());
+            const due = new Date(r.dueDate + 'T00:00:00');
+            const overdueDays = Math.max(0, daysBetween(due, today));
+            const tagClass = r.status === 'returned' ? 'tag-ok' : overdueDays > 0 ? 'tag-bad' : daysBetween(today, due) <= 3 ? 'tag-warn' : 'tag-ok';
+            const tagText = r.status === 'returned' ? 'Đã trả' : overdueDays > 0 ? `Quá hạn ${overdueDays} ngày` : daysBetween(today, due) <= 3 ? 'Sắp đến hạn' : 'Đang mượn';
+            const fine = overdueDays * remaining * FINE_PER_DAY;
+            return `
+                <div class="card" style="margin-bottom:12px" onclick="showReceiptDetail('${escapeAttr(r.id)}')">
+                    <div class="badge ${tagClass}">${tagText}</div>
+                    <div class="card-title">${escapeHtml(r.title)}</div>
+                    <div class="meta">Mã phiếu: ${escapeHtml(r.id)}</div>
+                    <div class="meta">Số lượng: ${r.qty}</div>
+                    <div class="meta">Đã trả: ${r.returnedQty}</div>
+                    <div class="meta">Ngày hẹn trả: ${r.dueDate}</div>
+                    <div class="meta">Trạng thái: ${escapeHtml(r.status)}</div>
+                    <div class="meta">Tiền phạt tạm tính: ${formatMoney(fine)}</div>
+                </div>
+            `;
+        }
+
+        function showReceiptDetail(id){
+            const user = currentUser();
+            let receipt = null;
+            if(user.role === 'user'){
+                receipt = getReceipts().find(r => r.id === id && r.username === user.username);
+            }else{
+                receipt = getReceipts().find(r => r.id === id);
+            }
+            if(!receipt) return;
+
+            const remaining = receipt.qty - receipt.returnedQty;
+            const today = startOfDay(new Date());
+            const due = new Date(receipt.dueDate + 'T00:00:00');
+            const overdueDays = Math.max(0, daysBetween(due, today));
+            const fine = overdueDays * remaining * FINE_PER_DAY;
+
+            openModal(`
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h3>Chi tiết phiếu mượn</h3>
+                        <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+                    </div>
+                    <div class="panel" style="margin:0 0 14px;background:#fffdf5">
+                        <div class="card-title">${escapeHtml(receipt.title)}</div>
+                        <div class="meta">Mã phiếu: <b>${escapeHtml(receipt.id)}</b></div>
+                        <div class="meta">Người mượn: ${escapeHtml(receipt.fullName || receipt.username)}</div>
+                        <div class="meta">Tài khoản: ${escapeHtml(receipt.username)}</div>
+                        <div class="meta">Sách mượn: ${escapeHtml(receipt.title)}</div>
+                        <div class="meta">Số lượng: ${receipt.qty}</div>
+                        <div class="meta">Đã trả: ${receipt.returnedQty}</div>
+                        <div class="meta">Ngày mượn: ${receipt.borrowDate}</div>
+                        <div class="meta">Ngày hẹn trả: ${receipt.dueDate}</div>
+                        <div class="meta">Trạng thái: ${escapeHtml(receipt.status)}</div>
+                        <div class="meta">Tiền phạt tạm tính: ${formatMoney(fine)}</div>
+                    </div>
+                    <div class="modal-actions">
+                        ${user.role === 'user' && receipt.status === 'borrowing' && remaining > 0 ? `<button class="btn btn-primary" onclick="openReturnModal('${escapeAttr(receipt.id)}')">Trả sách</button><button class="btn btn-ghost" onclick="extendBorrow('${escapeAttr(receipt.id)}')">Gia hạn</button>` : ''}
+                    </div>
+                </div>
+            `);
+        }
+
+        function renderAllReceiptsPage(){
+            const receipts = getReceipts();
+            const rows = receipts.map(r => receiptRowTemplate(r)).join('');
+            document.getElementById('workspace').innerHTML = `
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>Tất cả phiếu mượn</h3>
+                        <div class="small">Thủ thư xem được toàn bộ phiếu</div>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Mã phiếu</th>
+                                <th>Người mượn</th>
+                                <th>Sách</th>
+                                <th>Số lượng</th>
+                                <th>Hẹn trả</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows || '<tr><td colspan="7">Chưa có phiếu nào</td></tr>'}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function receiptRowTemplate(r){
+            const today = startOfDay(new Date());
+            const due = new Date(r.dueDate + 'T00:00:00');
+            const overdueDays = Math.max(0, daysBetween(due, today));
+            const remaining = r.qty - r.returnedQty;
+            const fine = overdueDays * remaining * FINE_PER_DAY;
+            return `
+                <tr>
+                    <td><b>${escapeHtml(r.id)}</b></td>
+                    <td>${escapeHtml(r.fullName || r.username)}</td>
+                    <td>${escapeHtml(r.title)}</td>
+                    <td>${r.qty}</td>
+                    <td>${r.dueDate}</td>
+                    <td>${escapeHtml(r.status)}${r.status === 'borrowing' && overdueDays > 0 ? `<div class="small">Quá hạn ${overdueDays} ngày</div>` : ''}<div class="small">${formatMoney(fine)}</div></td>
+                    <td><button class="btn btn-ghost" onclick="showReceiptDetail('${escapeAttr(r.id)}')">Xem</button></td>
+                </tr>
+            `;
+        }
+
+        function renderProfilePage(user){
+            document.getElementById('workspace').innerHTML = `
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>Thông tin cá nhân</h3>
+                        <div class="small">Người dùng có thể chỉnh sửa thông tin</div>
+                    </div>
+                    <div class="form-grid">
+                        <input id="profileUsername" class="field" value="${escapeHtml(user.username)}" readonly>
+                        <input id="profileFullName" class="field" value="${escapeHtml(user.fullName || '')}" placeholder="Họ và tên">
+                        <input id="profileEmail" class="field" value="${escapeHtml(user.email || '')}" placeholder="Email">
+                        <input id="profilePhone" class="field" value="${escapeHtml(user.phone || '')}" placeholder="Số điện thoại">
+                        <input id="profilePassword" class="field" type="password" placeholder="Mật khẩu mới">
+                        <input id="profileConfirm" class="field" type="password" placeholder="Xác nhận mật khẩu mới">
+                    </div>
+                    <div class="modal-actions" style="justify-content:flex-start">
+                        <button class="btn btn-primary" onclick="saveProfile()">Lưu thay đổi</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveProfile(){
+            const user = currentUser();
+            if(user.role !== 'user'){
+                alert('Chỉ người dùng mới được chỉnh sửa thông tin cá nhân');
+                return;
+            }
+            const users = getUsers();
+            const idx = users.findIndex(u => u.username === user.username);
+            if(idx < 0) return;
+
+            const fullName = document.getElementById('profileFullName').value.trim();
+            const email = document.getElementById('profileEmail').value.trim();
+            const phone = document.getElementById('profilePhone').value.trim();
+            const password = document.getElementById('profilePassword').value;
+            const confirm = document.getElementById('profileConfirm').value;
+
+            if(!fullName){
+                alert('Họ và tên không được để trống');
+                return;
+            }
+            if(password || confirm){
+                if(password !== confirm){
+                    alert('Mật khẩu xác nhận không khớp');
+                    return;
+                }
+                if(password.length < 3){
+                    alert('Mật khẩu mới quá ngắn');
+                    return;
+                }
+                users[idx].password = password;
+            }
+
+            users[idx].fullName = fullName;
+            users[idx].email = email;
+            users[idx].phone = phone;
+            saveUsers(users);
+            alert('Đã cập nhật thông tin cá nhân');
+            renderApp();
+        }
+
+        function renderInboxPage(user){
+            const inbox = Array.isArray(user.inbox) ? user.inbox : [];
+            document.getElementById('workspace').innerHTML = `
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>Hòm thư</h3>
+                        <div class="small">Thông báo hệ thống và lịch sử thao tác</div>
+                    </div>
+                    <div class="notice-list">
+                        ${inbox.length ? inbox.map(m => `
+                            <div class="notice-item">
+                                <div>${escapeHtml(m.text || m)}</div>
+                                <div class="time">${formatDateTime(m.at || new Date().toISOString())}</div>
+                            </div>
+                        `).join('') : '<div class="empty">Chưa có thông báo nào</div>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLibrarianDashboard(){
+            const books = getBooks();
+            const lowStock = books.filter(b => b.quantity <= 2).slice(0, 6);
+            const overdue = getReceipts().filter(r => {
+                if(r.status !== 'borrowing' || r.qty <= r.returnedQty) return false;
+                return daysBetween(startOfDay(new Date()), new Date(r.dueDate + 'T00:00:00')) < 0;
+            }).slice(0, 6);
+            document.getElementById('workspace').innerHTML = `
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>Tổng quan thủ thư</h3>
+                        <div class="small">Theo dõi nhanh tình trạng thư viện</div>
+                    </div>
+                    <div class="subgrid">
+                        <div class="card"><div class="badge">Kho sách</div><div class="card-title">${books.length} đầu sách</div><div class="meta">Tổng bản: ${books.reduce((s,b)=>s+Number(b.total||0),0)}</div></div>
+                        <div class="card"><div class="badge">Còn trong kho</div><div class="card-title">${books.reduce((s,b)=>s+Number(b.quantity||0),0)} bản</div><div class="meta">Sẵn sàng cho mượn</div></div>
+                        <div class="card"><div class="badge">Phiếu đang mượn</div><div class="card-title">${countActiveReceipts()}</div><div class="meta">Đang lưu hành</div></div>
+                        <div class="card"><div class="badge">Quá hạn</div><div class="card-title">${countOverdueReceipts()}</div><div class="meta">Cần nhắc nhở</div></div>
+                    </div>
+                </div>
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-title"><h3>Sách sắp hết</h3><div class="small">Cần bổ sung</div></div>
+                        ${lowStock.length ? lowStock.map(b => `
+                            <div class="notice-item">
+                                <b>${escapeHtml(b.name)}</b>
+                                <div class="small">Mã ${escapeHtml(b.id)} · Còn ${b.quantity}/${b.total} bản · ${escapeHtml(b.author)}</div>
+                            </div>
+                        `).join('') : '<div class="empty">Không có sách sắp hết</div>'}
+                    </div>
+                    <div class="panel">
+                        <div class="panel-title"><h3>Phiếu quá hạn</h3><div class="small">Top cần xử lý</div></div>
+                        ${overdue.length ? overdue.map(r => `
+                            <div class="notice-item">
+                                <b>${escapeHtml(r.fullName || r.username)}</b>
+                                <div class="small">${escapeHtml(r.title)} · Hẹn trả ${r.dueDate}</div>
+                            </div>
+                        `).join('') : '<div class="empty">Hiện chưa có phiếu quá hạn</div>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdminDashboard(){
+            const books = getBooks();
+            const librarians = getUsers().filter(u => u.role === 'librarian').length;
+            const reports = getReports();
+            const totalStock = books.reduce((s,b) => s + Number(b.total || 0), 0);
+            const available = books.reduce((s,b) => s + Number(b.quantity || 0), 0);
+            document.getElementById('workspace').innerHTML = `
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>Tổng quan admin</h3>
+                        <div class="small">Quản lý thủ thư và báo cáo</div>
+                    </div>
+                    <div class="subgrid">
+                        <div class="card"><div class="badge">Thủ thư</div><div class="card-title">${librarians}</div><div class="meta">Tài khoản thủ thư đang có</div></div>
+                        <div class="card"><div class="badge">Đầu sách</div><div class="card-title">${books.length}</div><div class="meta">Trong hệ thống</div></div>
+                        <div class="card"><div class="badge">Tồn kho</div><div class="card-title">${available}</div><div class="meta">Còn khả dụng</div></div>
+                        <div class="card"><div class="badge">Tổng bản</div><div class="card-title">${totalStock}</div><div class="meta">Tất cả bản sách</div></div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>Báo cáo nổi bật</h3>
+                    </div>
+                    <div class="notice-list">
+                        ${reports.map(r => `
+                            <div class="notice-item">
+                                <b>${escapeHtml(r.title)}</b>
+                                <div class="small">${escapeHtml(r.content)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderUsersPage(){
+            const user = currentUser();
+            if(user.role !== 'librarian') return;
+            const users = getUsers().filter(u => u.role === 'user');
+            const rows = users.map(u => {
+                const active = getReceipts().filter(r => r.username === u.username && r.status === 'borrowing' && r.qty > r.returnedQty).length;
+                const overdue = getReceipts().filter(r => r.username === u.username && r.status === 'borrowing' && r.qty > r.returnedQty && daysBetween(startOfDay(new Date()), new Date(r.dueDate + 'T00:00:00')) < 0).length;
+                const fine = calculateUserFine(u.username);
+                return `
+                    <tr>
+                        <td><b>${escapeHtml(u.username)}</b><div class="small">${escapeHtml(u.fullName || '')}</div></td>
+                        <td>${escapeHtml(u.email || '-')}</td>
+                        <td>${active}</td>
+                        <td>${overdue}</td>
+                        <td>${formatMoney(fine)}</td>
+                        <td>
+                            <div class="toolbar">
+                                <button class="btn btn-ghost" onclick="openUserDetail('${escapeAttr(u.username)}')">Xem</button>
+                                <button class="btn btn-soft" onclick="resetUserPassword('${escapeAttr(u.username)}')">Đặt lại MK</button>
+                                <button class="btn btn-ghost" onclick="deleteUser('${escapeAttr(u.username)}')">Xoá</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            document.getElementById('workspace').innerHTML = `
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>Quản lý người dùng</h3>
+                        <button class="btn btn-primary" onclick="openUserEditor()">Thêm người dùng</button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tài khoản</th>
+                                <th>Email</th>
+                                <th>Đang mượn</th>
+                                <th>Quá hạn</th>
+                                <th>Phạt</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows || '<tr><td colspan="6">Không có người dùng</td></tr>'}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function openUserEditor(username = null){
+            const user = currentUser();
+            if(user.role !== 'librarian') return;
+            const record = username ? getUsers().find(u => u.username === username) : { username:'', fullName:'', email:'', phone:'', password:'123456' };
+            state.editingUser = username;
+            openModal(`
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h3>${username ? 'Sửa người dùng' : 'Thêm người dùng'}</h3>
+                        <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+                    </div>
+                    <div class="form-grid">
+                        <input id="userUsername" class="field" placeholder="Tên tài khoản" value="${escapeHtml(record.username || '')}" ${username ? 'readonly' : ''}>
+                        <input id="userFullName" class="field" placeholder="Họ và tên" value="${escapeHtml(record.fullName || '')}">
+                        <input id="userEmail" class="field" placeholder="Email" value="${escapeHtml(record.email || '')}">
+                        <input id="userPhone" class="field" placeholder="Số điện thoại" value="${escapeHtml(record.phone || '')}">
+                        <input id="userPassword" class="field" type="password" placeholder="Mật khẩu" value="${escapeHtml(record.password || '123456')}">
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" onclick="saveUser()">Lưu</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function saveUser(){
+            const user = currentUser();
+            if(user.role !== 'librarian') return;
+
+            const username = document.getElementById('userUsername').value.trim();
+            const fullName = document.getElementById('userFullName').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            const phone = document.getElementById('userPhone').value.trim();
+            const password = document.getElementById('userPassword').value;
+
+            if(!username || !fullName || !password){
+                alert('Vui lòng nhập đầy đủ thông tin');
+                return;
+            }
+
+            const users = getUsers();
+            const idx = users.findIndex(u => u.username === username);
+
+            if(state.editingUser && idx >= 0){
+                if(users[idx].role !== 'user'){
+                    alert('Chỉ được sửa người dùng');
+                    return;
+                }
+                users[idx].fullName = fullName;
+                users[idx].email = email;
+                users[idx].phone = phone;
+                users[idx].password = password;
+            }else{
+                if(idx >= 0){
+                    alert('Tên tài khoản đã tồn tại');
+                    return;
+                }
+                users.push({
+                    username,
+                    password,
+                    role:'user',
+                    fullName,
+                    email,
+                    phone,
+                    inbox:[{ text:'Tài khoản được tạo bởi thủ thư.', at:new Date().toISOString() }],
+                    borrowed:[]
+                });
+            }
+
+            saveUsers(users);
+            closeModal();
+            renderApp();
+        }
+
+        function openUserDetail(username){
+            const u = getUsers().find(x => x.username === username);
+            if(!u) return;
+            const myReceipts = getReceipts().filter(r => r.username === username);
+            const active = myReceipts.filter(r => r.status === 'borrowing');
+            openModal(`
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h3>Chi tiết người dùng</h3>
+                        <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+                    </div>
+                    <div class="panel" style="margin:0 0 14px">
+                        <b>${escapeHtml(u.fullName || u.username)}</b>
+                        <div class="small">Tài khoản: ${escapeHtml(u.username)} · Email: ${escapeHtml(u.email || '-')} · SĐT: ${escapeHtml(u.phone || '-')}</div>
+                    </div>
+                    <div class="panel" style="margin:0 0 14px">
+                        <b>Phiếu đang mượn</b>
+                        ${active.length ? active.map(r => `<div class="notice-item"><div><b>${escapeHtml(r.title)}</b></div><div class="small">${r.qty - r.returnedQty}/${r.qty} · Hẹn trả ${r.dueDate}</div></div>`).join('') : '<div class="empty">Không có</div>'}
+                    </div>
+                    <div class="panel" style="margin:0">
+                        <b>Lịch sử phiếu</b>
+                        ${myReceipts.length ? myReceipts.map(r => `<div class="notice-item"><div><b>${escapeHtml(r.title)}</b></div><div class="small">Mượn ${r.borrowDate} · Trạng thái ${escapeHtml(r.status)}</div></div>`).join('') : '<div class="empty">Không có</div>'}
+                    </div>
+                </div>
+            `);
+        }
+
+        function resetUserPassword(username){
+            const users = getUsers();
+            const idx = users.findIndex(u => u.username === username);
+            if(idx < 0) return;
+            if(!confirm(`Đặt lại mật khẩu cho ${username} về 123456?`)) return;
+            users[idx].password = '123456';
+            users[idx].inbox = Array.isArray(users[idx].inbox) ? users[idx].inbox : [];
+            users[idx].inbox.unshift({ text:'Mật khẩu đã được thủ thư đặt lại thành 123456.', at:new Date().toISOString() });
+            saveUsers(users);
+            renderApp();
+        }
+
+        function deleteUser(username){
+            const current = currentUser();
+            if(username === current.username) return;
+            const users = getUsers();
+            const u = users.find(x => x.username === username);
+            if(!u) return;
+            if(u.role !== 'user') return;
+            if(!confirm(`Xoá tài khoản ${username}?`)) return;
+            saveUsers(users.filter(x => x.username !== username));
+            renderApp();
+        }
+
+        function renderStockPage(){
+            const books = getBooks();
+            const rows = books.map(b => `
+                <tr>
+                    <td><b>${escapeHtml(b.id)}</b></td>
+                    <td>${escapeHtml(b.name)}</td>
+                    <td>${escapeHtml(b.author)}</td>
+                    <td>${escapeHtml(b.category)}</td>
+                    <td>${b.quantity}</td>
+                    <td>${b.total}</td>
+                    <td>${b.total - b.quantity}</td>
+                </tr>
+            `).join('');
+            document.getElementById('workspace').innerHTML = `
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>Theo dõi tồn kho</h3>
+                        <div class="small">Tổng số, còn lại và số đang mượn</div>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Mã</th>
+                                <th>Tên sách</th>
+                                <th>Tác giả</th>
+                                <th>Thể loại</th>
+                                <th>Còn lại</th>
+                                <th>Tổng</th>
+                                <th>Đang mượn</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function calculateUserFine(username){
+            const receipts = getReceipts().filter(r => r.username === username);
+            const today = startOfDay(new Date());
+            return receipts.reduce((sum, r) => {
+                if(r.status !== 'borrowing' || r.qty <= r.returnedQty) return sum;
+                const remaining = r.qty - r.returnedQty;
+                const overdueDays = Math.max(0, daysBetween(new Date(r.dueDate + 'T00:00:00'), today));
+                return sum + overdueDays * remaining * FINE_PER_DAY;
+            }, 0);
+        }
+
+        function renderLibrariansPage(){
+            const user = currentUser();
+            if(user.role !== 'admin') return;
+            const librarians = getUsers().filter(u => u.role === 'librarian');
+            const rows = librarians.map(u => {
+                return `
+                    <tr>
+                        <td><b>${escapeHtml(u.username)}</b><div class="small">${escapeHtml(u.fullName || '')}</div></td>
+                        <td>${escapeHtml(u.email || '-')}</td>
+                        <td>${escapeHtml(u.phone || '-')}</td>
+                        <td>
+                            <div class="toolbar">
+                                <button class="btn btn-ghost" onclick="openLibrarianDetail('${escapeAttr(u.username)}')">Xem</button>
+                                <button class="btn btn-soft" onclick="openLibrarianEditor('${escapeAttr(u.username)}')">Sửa</button>
+                                <button class="btn btn-ghost" onclick="deleteLibrarian('${escapeAttr(u.username)}')">Xoá</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            document.getElementById('workspace').innerHTML = `
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>Quản lý thủ thư</h3>
+                        <button class="btn btn-primary" onclick="openLibrarianEditor()">Thêm thủ thư</button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tài khoản</th>
+                                <th>Email</th>
+                                <th>Số điện thoại</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows || '<tr><td colspan="4">Không có thủ thư nào</td></tr>'}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function openLibrarianEditor(username = null){
+            const user = currentUser();
+            if(user.role !== 'admin') return;
+            const record = username ? getUsers().find(u => u.username === username) : { username:'', fullName:'', email:'', phone:'', password:'123456' };
+            state.editingUser = username;
+            openModal(`
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h3>${username ? 'Sửa thủ thư' : 'Thêm thủ thư'}</h3>
+                        <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+                    </div>
+                    <div class="form-grid">
+                        <input id="libUsername" class="field" placeholder="Tên tài khoản" value="${escapeHtml(record.username || '')}" ${username ? 'readonly' : ''}>
+                        <input id="libFullName" class="field" placeholder="Họ và tên" value="${escapeHtml(record.fullName || '')}">
+                        <input id="libEmail" class="field" placeholder="Email" value="${escapeHtml(record.email || '')}">
+                        <input id="libPhone" class="field" placeholder="Số điện thoại" value="${escapeHtml(record.phone || '')}">
+                        <input id="libPassword" class="field" type="password" placeholder="Mật khẩu" value="${escapeHtml(record.password || '123456')}">
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" onclick="saveLibrarian()">Lưu</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function saveLibrarian(){
+            const user = currentUser();
+            if(user.role !== 'admin') return;
+
+            const username = document.getElementById('libUsername').value.trim();
+            const fullName = document.getElementById('libFullName').value.trim();
+            const email = document.getElementById('libEmail').value.trim();
+            const phone = document.getElementById('libPhone').value.trim();
+            const password = document.getElementById('libPassword').value;
+
+            if(!username || !fullName || !password){
+                alert('Vui lòng nhập đầy đủ thông tin');
+                return;
+            }
+
+            const users = getUsers();
+            const idx = users.findIndex(u => u.username === username);
+
+            if(state.editingUser && idx >= 0){
+                if(users[idx].role !== 'librarian'){
+                    alert('Chỉ được sửa tài khoản thủ thư');
+                    return;
+                }
+                users[idx].fullName = fullName;
+                users[idx].email = email;
+                users[idx].phone = phone;
+                users[idx].password = password;
+            }else{
+                if(idx >= 0){
+                    alert('Tên tài khoản đã tồn tại');
+                    return;
+                }
+                users.push({
+                    username,
+                    password,
+                    role:'librarian',
+                    fullName,
+                    email,
+                    phone,
+                    inbox:[{ text:'Tài khoản thủ thư được tạo bởi admin.', at:new Date().toISOString() }],
+                    borrowed:[]
+                });
+            }
+
+            saveUsers(users);
+            closeModal();
+            renderApp();
+        }
+
+        function openLibrarianDetail(username){
+            const u = getUsers().find(x => x.username === username);
+            if(!u) return;
+            openModal(`
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h3>Chi tiết thủ thư</h3>
+                        <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+                    </div>
+                    <div class="panel" style="margin:0">
+                        <b>${escapeHtml(u.fullName || u.username)}</b>
+                        <div class="small">Tài khoản: ${escapeHtml(u.username)}</div>
+                        <div class="small">Email: ${escapeHtml(u.email || '-')}</div>
+                        <div class="small">Số điện thoại: ${escapeHtml(u.phone || '-')}</div>
+                    </div>
+                </div>
+            `);
+        }
+
+        function deleteLibrarian(username){
+            if(username === 'admin') return;
+            const users = getUsers();
+            const u = users.find(x => x.username === username);
+            if(!u || u.role !== 'librarian') return;
+            if(!confirm(`Xoá thủ thư ${username}?`)) return;
+            saveUsers(users.filter(x => x.username !== username));
+            renderApp();
+        }
+
+        function renderReportsPage(){
+            const books = getBooks();
+            const receipts = getReceipts();
+            const reports = getReports();
+            const topBook = books.slice().sort((a,b) => (b.total - b.quantity) - (a.total - a.quantity))[0];
+            const totalFine = calculateTotalFine();
+            const overdue = countOverdueReceipts();
+            document.getElementById('workspace').innerHTML = `
+                <div class="panel">
+                    <div class="panel-title">
+                        <h3>Báo cáo hệ thống</h3>
+                    </div>
+                    <div class="subgrid">
+                        <div class="card">
+                            <div class="badge">Phiếu mượn</div>
+                            <div class="card-title">${receipts.length}</div>
+                            <div class="meta">Tổng số phiếu trong hệ thống</div>
+                        </div>
+                        <div class="card">
+                            <div class="badge">Quá hạn</div>
+                            <div class="card-title">${overdue}</div>
+                            <div class="meta">Phiếu cần xử lý</div>
+                        </div>
+                        <div class="card">
+                            <div class="badge">Tiền phạt</div>
+                            <div class="card-title">${formatMoney(totalFine)}</div>
+                            <div class="meta">Tạm tính theo dữ liệu hiện tại</div>
+                        </div>
+                        <div class="card">
+                            <div class="badge">Sách mượn nhiều</div>
+                            <div class="card-title">${escapeHtml(topBook ? topBook.name : '-')}</div>
+                            <div class="meta">${topBook ? `Đang mượn ${topBook.total - topBook.quantity} bản` : 'Chưa có dữ liệu'}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-title">
+                            <h3>Báo cáo</h3>
+                          
+                        </div>
+                        <div class="notice-list">
+                            ${reports.map(r => `
+                                <div class="notice-item">
+                                    <b>${escapeHtml(r.title)}</b>
+                                    <div class="small">${escapeHtml(r.content)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-title">
+                            <h3>Top sách mượn nhiều</h3>
+                        </div>
+                        ${books.slice().sort((a,b) => (b.total - b.quantity) - (a.total - a.quantity)).slice(0,6).map(b => `
+                            <div class="notice-item">
+                                <b>${escapeHtml(b.name)}</b>
+                                <div class="small">Mã ${escapeHtml(b.id)} · Đã mượn ${b.total - b.quantity} bản</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function syncReminders(){
+            const users = getUsers();
+            const receipts = getReceipts();
+            let changed = false;
+            const today = startOfDay(new Date());
+
+            receipts.forEach(r => {
+                if(r.status !== 'borrowing' || r.qty <= r.returnedQty) return;
+                const remaining = r.qty - r.returnedQty;
+                const due = new Date(r.dueDate + 'T00:00:00');
+                const daysLeft = daysBetween(today, due);
+                const overdueDays = Math.max(0, -daysLeft);
+
+                if(daysLeft >= 0 && daysLeft <= 3 && !r.noticeDueSoonSent){
+                    const user = users.find(u => u.username === r.username);
+                    if(user){
+                        user.inbox.unshift({ text:`Nhắc nhở: sách ${r.title} sắp đến hạn trả vào ${r.dueDate}.`, at:new Date().toISOString() });
+                        changed = true;
+                    }
+                    r.noticeDueSoonSent = true;
+                }
+
+                if(overdueDays >= 1 && (r.lastOverdueNoticeDay === 0 || overdueDays - r.lastOverdueNoticeDay >= 3)){
+                    const user = users.find(u => u.username === r.username);
+                    if(user){
+                        user.inbox.unshift({ text:`Sách ${r.title} đã quá hạn ${overdueDays} ngày. Tiền phạt tạm tính: ${formatMoney(overdueDays * remaining * FINE_PER_DAY)}.`, at:new Date().toISOString() });
+                        changed = true;
+                    }
+                    r.lastOverdueNoticeDay = overdueDays;
+                }
+            });
+
+            if(changed){
+                saveUsers(users);
+                saveReceipts(receipts);
+            }
+        }
+
+        function showInitialScreen(){
+            initAppData();
+            const user = currentUser();
+            if(user){
+                document.getElementById('roleScreen').classList.add('hidden');
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('registerScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.remove('hidden');
+                state.role = user.role;
+                state.tab = user.role === 'user' ? 'books' : 'dashboard';
+                syncReminders();
+                renderApp();
+            }
         }
 
         setInterval(() => {
-          if (!getCurrentUser()) return;
-          syncNotifications();
+            if(currentUser()) syncReminders();
         }, 60000);
 
         window.addEventListener('DOMContentLoaded', showInitialScreen);
