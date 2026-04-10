@@ -1,0 +1,1731 @@
+﻿@page
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management</title>
+    <style>
+        :root {
+            --red: #d62828;
+            --red2: #b71c1c;
+            --yellow: #ffd54f;
+            --bg: #f8f8f8;
+            --card: #ffffff;
+            --text: #1f1f1f;
+            --muted: #666;
+            --line: #ececec
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial,Helvetica,sans-serif;
+            background: linear-gradient(180deg,#fff 0%,#fff7e0 100%);
+            color: var(--text)
+        }
+
+        .hidden {
+            display: none !important
+        }
+
+        .screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px
+        }
+
+        .auth-card {
+            width: min(430px,100%);
+            background: var(--card);
+            border-radius: 22px;
+            box-shadow: 0 18px 50px rgba(0,0,0,.12);
+            padding: 26px;
+            border: 1px solid rgba(214,40,40,.12)
+        }
+
+            .auth-card h1, .auth-card h2 {
+                margin: 0 0 14px
+            }
+
+            .auth-card .muted {
+                color: var(--muted);
+                font-size: 14px;
+                margin-bottom: 12px
+            }
+
+        .role-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px
+        }
+
+        button, input, select {
+            font: inherit
+        }
+
+        .btn {
+            border: none;
+            border-radius: 14px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: .2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px
+        }
+
+            .btn:hover {
+                transform: translateY(-1px);
+                filter: saturate(1.05)
+            }
+
+        .btn-primary {
+            background: var(--red);
+            color: #fff
+        }
+
+            .btn-primary:hover {
+                background: var(--yellow);
+                color: #1c1c1c
+            }
+
+        .btn-ghost {
+            background: #fff;
+            border: 1px solid #ddd;
+            color: #333
+        }
+
+            .btn-ghost:hover {
+                background: var(--yellow);
+                border-color: var(--yellow)
+            }
+
+        .btn-soft {
+            background: #fff6f6;
+            border: 1px solid #f3c7c7;
+            color: var(--red2)
+        }
+
+            .btn-soft:hover {
+                background: var(--yellow);
+                color: #1c1c1c;
+                border-color: var(--yellow)
+            }
+
+        .field {
+            width: 100%;
+            border: 1px solid #e2e2e2;
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin: 8px 0;
+            background: #fff;
+            outline: none;
+            transition: .2s
+        }
+
+            .field:focus {
+                border-color: var(--red);
+                box-shadow: 0 0 0 4px rgba(214,40,40,.08)
+            }
+
+        .link-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 12px;
+            font-size: 14px;
+            flex-wrap: wrap
+        }
+
+            .link-row a {
+                color: var(--red2);
+                text-decoration: none;
+                font-weight: 700;
+                cursor: pointer
+            }
+
+                .link-row a:hover {
+                    color: #000;
+                    text-decoration: underline
+                }
+
+        .topbar {
+            height: 74px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 22px;
+            border-bottom: 1px solid var(--line);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            box-shadow: 0 2px 18px rgba(0,0,0,.04)
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--red2);
+            letter-spacing: .2px
+        }
+
+        .brand-sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px
+        }
+
+        .session-chip {
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: #fff6f6;
+            border: 1px solid #f3cece;
+            color: var(--red2);
+            font-weight: 700
+        }
+
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 74px)
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg,#fff 0%,#fff8e6 100%);
+            border-right: 1px solid var(--line);
+            padding: 18px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .nav-btn {
+            width: 100%;
+            justify-content: flex-start;
+            background: #fff;
+            border: 1px solid #eee;
+            color: #222;
+            padding: 13px 14px;
+            border-radius: 16px;
+            font-weight: 700
+        }
+
+            .nav-btn:hover, .nav-btn.active {
+                background: var(--red);
+                color: #fff;
+                border-color: var(--red)
+            }
+
+        .nav-bottom {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px dashed #ead6d6
+        }
+
+        .main {
+            flex: 1;
+            padding: 22px;
+            overflow: auto
+        }
+
+        .grid-stats {
+            display: grid;
+            grid-template-columns: repeat(4,minmax(0,1fr));
+            gap: 14px;
+            margin-bottom: 18px
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.05)
+        }
+
+            .stat-card .label {
+                color: var(--muted);
+                font-size: 13px;
+                margin-bottom: 8px
+            }
+
+            .stat-card .value {
+                font-size: 28px;
+                font-weight: 900;
+                color: var(--red2)
+            }
+
+            .stat-card .foot {
+                margin-top: 6px;
+                font-size: 13px;
+                color: var(--muted)
+            }
+
+        .panel {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.05);
+            margin-bottom: 18px
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px
+        }
+
+            .panel-title h3 {
+                margin: 0
+            }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center
+        }
+
+        .search {
+            min-width: 280px;
+            flex: 1
+        }
+
+        .select {
+            min-width: 190px
+        }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
+            gap: 14px
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: 0 8px 22px rgba(0,0,0,.04);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: .2s
+        }
+
+            .card:hover {
+                transform: translateY(-2px);
+                border-color: #f0c98d;
+                box-shadow: 0 14px 28px rgba(0,0,0,.08)
+            }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #fff8da;
+            border: 1px solid #ffe48f;
+            color: #8c6500;
+            font-size: 12px;
+            font-weight: 700;
+            width: max-content
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 900;
+            color: #222;
+            line-height: 1.25
+        }
+
+        .meta {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.55
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: auto
+        }
+
+            .actions .btn {
+                flex: 1
+            }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 16px
+        }
+
+            .table th, .table td {
+                padding: 12px 10px;
+                border-bottom: 1px solid #f0f0f0;
+                text-align: left;
+                font-size: 14px;
+                vertical-align: top
+            }
+
+            .table th {
+                background: #fff7f7;
+                color: #7f1010;
+                font-size: 13px;
+                text-transform: uppercase;
+                letter-spacing: .4px
+            }
+
+            .table tr:hover td {
+                background: #fffef7
+            }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1.2fr .8fr;
+            gap: 14px
+        }
+
+        .small {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .subgrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+            gap: 12px
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 10px
+        }
+
+        .form-title {
+            margin: 0 0 8px;
+            font-size: 18px
+        }
+
+        .hr {
+            height: 1px;
+            background: #eee;
+            margin: 14px 0
+        }
+
+        .notice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .notice-item {
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid #eee;
+            background: #fff
+        }
+
+            .notice-item .time {
+                font-size: 12px;
+                color: var(--muted);
+                margin-top: 4px
+            }
+
+        .empty {
+            padding: 30px 16px;
+            text-align: center;
+            color: var(--muted)
+        }
+
+        .tag {
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            width: max-content
+        }
+
+        .tag-ok {
+            background: #e7f7ea;
+            color: #176b25
+        }
+
+        .tag-warn {
+            background: #fff2d7;
+            color: #9a5a00
+        }
+
+        .tag-bad {
+            background: #ffe4e4;
+            color: #b40000
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 20
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 21;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px
+        }
+
+        .modal-card {
+            width: min(620px,100%);
+            background: #fff;
+            border-radius: 22px;
+            box-shadow: 0 18px 60px rgba(0,0,0,.25);
+            padding: 20px;
+            border: 1px solid #eee;
+            max-height: 92vh;
+            overflow: auto
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px
+        }
+
+            .modal-header h3 {
+                margin: 0
+            }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            margin-top: 16px
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 10px
+        }
+
+        textarea.field {
+            min-height: 100px;
+            resize: vertical
+        }
+
+      
+
+
+
+      </style>
+</head>
+<body>
+   
+
+    <div id="roleScreen" class="screen">
+        <div class="auth-card">
+            <h1>Library Management</h1>
+            <div class="muted">Chọn loại tài khoản trước khi đăng nhập</div>
+            <div class="role-row">
+                <button class="btn btn-primary" onclick="chooseRole('user')">Người dùng</button>
+                <button class="btn btn-ghost" onclick="chooseRole('admin')">Admin</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loginScreen" class="screen hidden">
+        <div class="auth-card">
+            <div class="modal-header" style="margin-bottom:10px">
+                <div>
+                    <div class="badge" id="roleBadge">Người dùng</div>
+                </div>
+                <button class="btn btn-ghost" onclick="backToRole()">Đổi loại</button>
+            </div>
+            <h2>Đăng nhập</h2>
+            <input id="loginUsername" class="field" placeholder="Tên đăng nhập">
+            <input id="loginPassword" class="field" type="password" placeholder="Mật khẩu">
+            <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="login()">Đăng nhập</button>
+            <div class="link-row">
+                <a id="registerLink" href="#" onclick="openRegister();return false">Đăng ký</a>
+                <a href="#" onclick="forgotPassword();return false">Quên mật khẩu</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="registerScreen" class="screen hidden">
+        <div class="auth-card">
+            <div class="modal-header" style="margin-bottom:10px">
+                <div class="badge">Đăng ký người dùng</div>
+                <button class="btn btn-ghost" onclick="backToLogin()">Quay lại</button>
+            </div>
+            <h2>Tạo tài khoản</h2>
+            <input id="regUsername" class="field" placeholder="Tên tài khoản">
+            <input id="regFullName" class="field" placeholder="Họ và tên">
+            <input id="regEmail" class="field" placeholder="Email">
+            <input id="regPassword" class="field" type="password" placeholder="Mật khẩu">
+            <input id="regConfirm" class="field" type="password" placeholder="Xác nhận mật khẩu">
+            <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="register()">Đăng ký</button>
+        </div>
+    </div>
+
+    <div id="appScreen" class="hidden">
+        <div class="topbar">
+            <div>
+                <div class="brand">Library Management</div>
+                <div class="brand-sub">Giao diện quản lý sách, tài khoản và mượn trả</div>
+            </div>
+            <div class="session-chip" id="sessionInfo"></div>
+        </div>
+        <div class="layout">
+            <aside class="sidebar">
+                <div id="sidebarButtons"></div>
+                <div class="nav-bottom">
+                    <button class="btn nav-btn" onclick="logout()">Đăng xuất</button>
+                </div>
+            </aside>
+            <main class="main">
+                <div id="summaryRow" class="grid-stats"></div>
+                <div id="workspace"></div>
+            </main>
+        </div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay hidden" onclick="closeModal()"></div>
+    <div id="modalBox" class="modal hidden"></div>
+
+    <script>
+        const MS_DAY = 24 * 60 * 60 * 1000;
+        const FINE_PER_DAY = 5000;
+
+        const seedBooks = [
+          { id: 'B01', name: 'Harry Potter', author: 'J.K. Rowling', category: 'Fantasy', total: 5, quantity: 5 },
+          { id: 'B02', name: 'Doraemon', author: 'Fujiko F. Fujio', category: 'Comic', total: 10, quantity: 10 },
+          { id: 'B03', name: 'Sherlock Holmes', author: 'Arthur Conan Doyle', category: 'Detective', total: 7, quantity: 7 },
+          { id: 'B04', name: 'One Piece', author: 'Eiichiro Oda', category: 'Manga', total: 12, quantity: 12 },
+          { id: 'B05', name: 'Naruto', author: 'Masashi Kishimoto', category: 'Manga', total: 9, quantity: 9 },
+          { id: 'B06', name: 'Clean Code', author: 'Robert C. Martin', category: 'IT', total: 4, quantity: 4 },
+          { id: 'B07', name: 'The Hobbit', author: 'J.R.R. Tolkien', category: 'Fantasy', total: 6, quantity: 6 },
+          { id: 'B08', name: 'C++ Primer', author: 'Stanley B. Lippman', category: 'IT', total: 8, quantity: 8 },
+          { id: 'B09', name: 'Python Crash Course', author: 'Eric Matthes', category: 'IT', total: 5, quantity: 5 },
+          { id: 'B10', name: 'Database Systems', author: 'Ramez Elmasri', category: 'IT', total: 3, quantity: 3 },
+          { id: 'B11', name: 'Atomic Habits', author: 'James Clear', category: 'Self-help', total: 6, quantity: 6 },
+          { id: 'B12', name: 'Rich Dad Poor Dad', author: 'Robert Kiyosaki', category: 'Finance', total: 7, quantity: 7 },
+          { id: 'B13', name: 'Think and Grow Rich', author: 'Napoleon Hill', category: 'Finance', total: 5, quantity: 5 },
+          { id: 'B14', name: 'Sapiens', author: 'Yuval Noah Harari', category: 'History', total: 4, quantity: 4 },
+          { id: 'B15', name: '1984', author: 'George Orwell', category: 'Novel', total: 6, quantity: 6 },
+          { id: 'B16', name: 'The Alchemist', author: 'Paulo Coelho', category: 'Novel', total: 8, quantity: 8 },
+          { id: 'B17', name: 'To Kill a Mockingbird', author: 'Harper Lee', category: 'Novel', total: 3, quantity: 3 },
+          { id: 'B18', name: 'A Game of Thrones', author: 'George R. R. Martin', category: 'Fantasy', total: 5, quantity: 5 },
+          { id: 'B19', name: 'War and Peace', author: 'Leo Tolstoy', category: 'Classic', total: 2, quantity: 2 },
+          { id: 'B20', name: 'The Great Gatsby', author: 'F. Scott Fitzgerald', category: 'Classic', total: 4, quantity: 4 }
+        ];
+
+        const seedUsers = [
+          {
+            username: 'admin',
+            password: '123',
+            role: 'admin',
+            fullName: 'Administrator',
+            email: 'admin@library.local',
+            phone: '',
+            inbox: [],
+            borrowed: []
+          }
+        ];
+
+        let state = {
+          role: 'user',
+          tab: 'books',
+          search: '',
+          sort: 'name-asc',
+          editingBook: null,
+          borrowBookId: null,
+          returnRecordId: null,
+          detailUser: null,
+          recentMessage: ''
+        };
+
+        function loadJSON(key, fallback) {
+          const raw = localStorage.getItem(key);
+          if (!raw) return JSON.parse(JSON.stringify(fallback));
+          try {
+            const parsed = JSON.parse(raw);
+            return parsed;
+          } catch {
+            return JSON.parse(JSON.stringify(fallback));
+          }
+        }
+
+        function saveJSON(key, value) {
+          localStorage.setItem(key, JSON.stringify(value));
+        }
+
+        function normalizeData() {
+          let books = loadJSON('books', seedBooks);
+          books = books.map((b, index) => ({
+            id: String(b.id || `B${String(index + 1).padStart(2, '0')}`),
+            name: b.name || 'Không tên',
+            author: b.author || '',
+            category: b.category || '',
+            total: Number.isFinite(Number(b.total)) ? Number(b.total) : Number(b.quantity || 0),
+            quantity: Number.isFinite(Number(b.quantity)) ? Number(b.quantity) : Number(b.total || 0)
+          }));
+          books.forEach(b => {
+            if (!Number.isFinite(b.total) || b.total < 0) b.total = b.quantity;
+            if (!Number.isFinite(b.quantity) || b.quantity < 0) b.quantity = 0;
+            if (b.quantity > b.total) b.total = b.quantity;
+          });
+          saveJSON('books', books);
+
+          let users = loadJSON('users', seedUsers);
+          users = users.map(u => ({
+            username: String(u.username || '').trim(),
+            password: String(u.password || ''),
+            role: u.role === 'admin' ? 'admin' : 'user',
+            fullName: u.fullName || u.username || '',
+            email: u.email || '',
+            phone: u.phone || '',
+            inbox: Array.isArray(u.inbox) ? u.inbox.map(m => typeof m === 'string' ? { text: m, at: new Date().toISOString() } : m) : [],
+            borrowed: Array.isArray(u.borrowed) ? u.borrowed.map(normalizeBorrowRecord) : []
+          })).filter(u => u.username);
+
+          if (!users.some(u => u.role === 'admin' && u.username === 'admin')) {
+            users.unshift({
+              username: 'admin',
+              password: '123',
+              role: 'admin',
+              fullName: 'Administrator',
+              email: 'admin@library.local',
+              phone: '',
+              inbox: [],
+              borrowed: []
+            });
+          }
+
+          saveJSON('users', users);
+        }
+
+        function normalizeBorrowRecord(r) {
+          const qty = Number(r.qty || r.quantity || 1);
+          const returnedQty = Number(r.returnedQty || 0);
+          return {
+            id: r.id || `BR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            bookId: r.bookId || r.idBook || r.book || '',
+            title: r.title || r.bookTitle || '',
+            qty: Number.isFinite(qty) && qty > 0 ? qty : 1,
+            returnedQty: Number.isFinite(returnedQty) && returnedQty >= 0 ? returnedQty : 0,
+            borrowDate: r.borrowDate || toDateInput(new Date()),
+            dueDate: r.dueDate || toDateInput(addDays(new Date(), 7)),
+            status: r.status === 'returned' ? 'returned' : 'borrowing',
+            noticeDueSoonSent: !!r.noticeDueSoonSent,
+            lastOverdueNoticeDay: Number.isFinite(Number(r.lastOverdueNoticeDay)) ? Number(r.lastOverdueNoticeDay) : 0,
+            finePaid: Number.isFinite(Number(r.finePaid)) ? Number(r.finePaid) : 0,
+            returnedAt: r.returnedAt || '',
+            note: r.note || ''
+          };
+        }
+
+        function toDateInput(date) {
+          const d = new Date(date);
+          const tz = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+          return tz.toISOString().slice(0, 10);
+        }
+
+        function addDays(date, days) {
+          const d = new Date(date);
+          d.setDate(d.getDate() + days);
+          return d;
+        }
+
+        function startOfDay(date) {
+          return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+
+        function daysBetween(a, b) {
+          return Math.floor((startOfDay(b) - startOfDay(a)) / MS_DAY);
+        }
+
+        function chooseRole(role) {
+          state.role = role;
+          document.getElementById('roleScreen').classList.add('hidden');
+          document.getElementById('loginScreen').classList.remove('hidden');
+          document.getElementById('registerLink').style.display = role === 'user' ? 'inline' : 'none';
+          document.getElementById('roleBadge').textContent = role === 'admin' ? 'Admin' : 'Người dùng';
+          document.getElementById('loginUsername').value = '';
+          document.getElementById('loginPassword').value = '';
+        }
+
+        function backToRole() {
+          document.getElementById('loginScreen').classList.add('hidden');
+          document.getElementById('registerScreen').classList.add('hidden');
+          document.getElementById('roleScreen').classList.remove('hidden');
+        }
+
+        function openRegister() {
+          if (state.role === 'admin') return;
+          document.getElementById('loginScreen').classList.add('hidden');
+          document.getElementById('registerScreen').classList.remove('hidden');
+        }
+
+        function backToLogin() {
+          document.getElementById('registerScreen').classList.add('hidden');
+          document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        function getUsers() {
+          return loadJSON('users', seedUsers);
+        }
+
+        function getBooks() {
+          return loadJSON('books', seedBooks);
+        }
+
+        function saveUsers(users) {
+          saveJSON('users', users);
+        }
+
+        function saveBooks(books) {
+          saveJSON('books', books);
+        }
+
+        function getCurrentUser() {
+          const username = localStorage.getItem('currentUser');
+          if (!username) return null;
+          const users = getUsers();
+          return users.find(u => u.username === username) || null;
+        }
+
+        function saveCurrentUser(user) {
+          const users = getUsers();
+          const idx = users.findIndex(u => u.username === user.username);
+          if (idx >= 0) {
+            users[idx] = user;
+            saveUsers(users);
+          }
+          localStorage.setItem('currentUser', user.username);
+        }
+
+        function login() {
+          const username = document.getElementById('loginUsername').value.trim();
+          const password = document.getElementById('loginPassword').value;
+          const users = getUsers();
+          const user = users.find(u => u.username === username && u.password === password && u.role === state.role);
+          if (!user) {
+            alert('Sai thông tin đăng nhập');
+            return;
+          }
+          localStorage.setItem('currentUser', user.username);
+          document.getElementById('loginScreen').classList.add('hidden');
+          document.getElementById('registerScreen').classList.add('hidden');
+          document.getElementById('appScreen').classList.remove('hidden');
+          state.tab = state.role === 'admin' ? 'dashboard' : 'books';
+          syncNotifications();
+          renderApp();
+        }
+
+        function register() {
+          if (state.role === 'admin') return;
+          const username = document.getElementById('regUsername').value.trim();
+          const fullName = document.getElementById('regFullName').value.trim();
+          const email = document.getElementById('regEmail').value.trim();
+          const password = document.getElementById('regPassword').value;
+          const confirm = document.getElementById('regConfirm').value;
+          if (!username || !fullName || !password || !confirm) {
+            alert('Vui lòng nhập đầy đủ thông tin');
+            return;
+          }
+          if (password !== confirm) {
+            alert('Mật khẩu xác nhận không khớp');
+            return;
+          }
+          const users = getUsers();
+          if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+            alert('Tài khoản đã tồn tại');
+            return;
+          }
+          users.push({
+            username,
+            password,
+            role: 'user',
+            fullName,
+            email,
+            phone: '',
+            inbox: [{ text: 'Tài khoản đã được tạo thành công.', at: new Date().toISOString() }],
+            borrowed: []
+          });
+          saveUsers(users);
+          alert('Đăng ký thành công');
+          backToLogin();
+        }
+
+        function forgotPassword() {
+          const username = prompt('Nhập tên tài khoản');
+          if (!username) return;
+          const users = getUsers();
+          const user = users.find(u => u.username === username.trim());
+          if (!user) {
+            alert('Không tìm thấy tài khoản');
+            return;
+          }
+          alert(`Mật khẩu của bạn là: ${user.password}`);
+        }
+
+        function logout() {
+          localStorage.removeItem('currentUser');
+          state.search = '';
+          state.sort = 'name-asc';
+          document.getElementById('appScreen').classList.add('hidden');
+          document.getElementById('roleScreen').classList.remove('hidden');
+        }
+
+        function setTab(tab) {
+          state.tab = tab;
+          renderApp();
+        }
+
+        function renderApp() {
+          const user = getCurrentUser();
+          if (!user) {
+            logout();
+            return;
+          }
+          document.getElementById('sessionInfo').textContent = `${user.fullName || user.username} · ${user.role === 'admin' ? 'Admin' : 'Người dùng'}`;
+          renderSidebar(user);
+          renderSummary(user);
+          renderWorkspace(user);
+        }
+
+        function renderSidebar(user) {
+          const items = user.role === 'admin'
+            ? [
+                ['dashboard', 'Tổng quan'],
+                ['books', 'Quản lý sách'],
+                ['users', 'Quản lý user'],
+                ['stock', 'Tồn kho'],
+                ['inbox', 'Hòm thư']
+              ]
+            : [
+                ['books', 'Danh sách sách'],
+                ['borrowed', 'Sách đã mượn'],
+                ['profile', 'Thông tin cá nhân'],
+                ['inbox', 'Hòm thư']
+              ];
+          document.getElementById('sidebarButtons').innerHTML = items.map(([tab, label]) => `
+            <button class="btn nav-btn ${state.tab === tab ? 'active' : ''}" onclick="setTab('${tab}')">${label}</button>
+          `).join('');
+        }
+
+        function renderSummary(user) {
+          const books = getBooks();
+          const currentBorrowed = getAllBorrowedRecords().filter(r => r.status === 'borrowing');
+          const overdueCount = countOverdueRecords(user.username);
+          const totalFine = calculateFineForUser(user.username);
+          const totalAvailable = books.reduce((s, b) => s + Number(b.quantity || 0), 0);
+          const totalStock = books.reduce((s, b) => s + Number(b.total || 0), 0);
+          const items = user.role === 'admin'
+            ? [
+                ['Tổng đầu sách', books.length, 'Quyển khác nhau trong hệ thống'],
+                ['Tổng bản có sẵn', totalAvailable, 'Số lượng đang còn trong kho'],
+                ['Đang được mượn', totalStock - totalAvailable, 'Số bản đang lưu hành'],
+                ['Quá hạn', countAllOverdueRecords(), 'Các lượt mượn cần xử lý']
+              ]
+            : [
+                ['Đang mượn', currentBorrowed.filter(r => r.username === user.username).length, 'Lượt mượn còn hiệu lực'],
+                ['Quá hạn', overdueCount, 'Lượt cần trả ngay'],
+                ['Tiền phạt', formatMoney(totalFine), 'Tính theo số ngày quá hạn'],
+                ['Hòm thư', user.inbox.length, 'Thông báo mới và lịch sử']
+              ];
+          document.getElementById('summaryRow').innerHTML = items.map(([label, value, foot]) => `
+            <div class="stat-card">
+              <div class="label">${label}</div>
+              <div class="value">${value}</div>
+              <div class="foot">${foot}</div>
+            </div>
+          `).join('');
+        }
+
+        function renderWorkspace(user) {
+          if (user.role === 'admin') {
+            if (state.tab === 'dashboard') return renderAdminDashboard(user);
+            if (state.tab === 'books') return renderBooksPage(user);
+            if (state.tab === 'users') return renderUsersPage(user);
+            if (state.tab === 'stock') return renderStockPage(user);
+            if (state.tab === 'inbox') return renderInboxPage(user);
+          } else {
+            if (state.tab === 'books') return renderBooksPage(user);
+            if (state.tab === 'borrowed') return renderBorrowedPage(user);
+            if (state.tab === 'profile') return renderProfilePage(user);
+            if (state.tab === 'inbox') return renderInboxPage(user);
+          }
+        }
+
+        function renderAdminDashboard(user) {
+          const books = getBooks();
+          const lowStock = books.filter(b => b.quantity <= 2).slice(0, 6);
+          const overdueUsers = getUsers()
+            .filter(u => u.role === 'user')
+            .map(u => ({
+              user: u,
+              overdue: countOverdueRecords(u.username),
+              fine: calculateFineForUser(u.username)
+            }))
+            .filter(x => x.overdue > 0)
+            .sort((a, b) => b.overdue - a.overdue)
+            .slice(0, 6);
+          document.getElementById('workspace').innerHTML = `
+            <div class="panel">
+              <div class="panel-title"><h3>Tổng quan hệ thống</h3><div class="small">Theo dõi nhanh tình trạng thư viện</div></div>
+              <div class="subgrid">
+                <div class="card"><div class="badge">Kho sách</div><div class="card-title">${books.length} đầu sách</div><div class="meta">Tổng bản: ${books.reduce((s,b)=>s+Number(b.total||0),0)}</div></div>
+                <div class="card"><div class="badge">Tồn kho</div><div class="card-title">${books.reduce((s,b)=>s+Number(b.quantity||0),0)} bản</div><div class="meta">Sẵn sàng cho mượn ngay</div></div>
+                <div class="card"><div class="badge">Người dùng</div><div class="card-title">${getUsers().filter(u=>u.role==='user').length}</div><div class="meta">Tài khoản đang hoạt động</div></div>
+                <div class="card"><div class="badge">Quá hạn</div><div class="card-title">${countAllOverdueRecords()}</div><div class="meta">Cần xử lý sớm</div></div>
+              </div>
+            </div>
+            <div class="two-col">
+              <div class="panel">
+                <div class="panel-title"><h3>Sách sắp hết</h3><div class="small">Danh sách cần bổ sung</div></div>
+                ${lowStock.length ? lowStock.map(b => `
+                  <div class="notice-item">
+                    <b>${b.name}</b>
+                    <div class="small">Mã ${b.id} · Còn ${b.quantity}/${b.total} bản · ${b.author}</div>
+                  </div>
+                `).join('') : '<div class="empty">Không có sách sắp hết</div>'}
+              </div>
+              <div class="panel">
+                <div class="panel-title"><h3>Người dùng quá hạn</h3><div class="small">Top cần nhắc nhở</div></div>
+                ${overdueUsers.length ? overdueUsers.map(x => `
+                  <div class="notice-item">
+                    <b>${x.user.fullName || x.user.username}</b>
+                    <div class="small">${x.user.username} · Quá hạn ${x.overdue} lượt · Phạt ${formatMoney(x.fine)}</div>
+                  </div>
+                `).join('') : '<div class="empty">Hiện chưa có người dùng quá hạn</div>'}
+              </div>
+            </div>
+          `;
+        }
+
+        function renderBooksPage(user) {
+          const books = getSortedFilteredBooks();
+          const adminTools = user.role === 'admin' ? `
+            <button class="btn btn-primary" onclick="openBookEditor()">Thêm sách</button>
+          ` : '';
+          document.getElementById('workspace').innerHTML = `
+            <div class="panel">
+              <div class="panel-title">
+                <h3>${user.role === 'admin' ? 'Quản lý sách' : 'Danh sách sách'}</h3>
+                ${adminTools}
+              </div>
+              <div class="toolbar">
+                <input id="searchBox" class="field search" placeholder="Tìm theo tên, mã, tác giả, thể loại" value="${escapeHtml(state.search)}" oninput="updateSearch(this.value)">
+                <button class="btn btn-ghost" onclick="sortBy('name-asc')">A → Z</button>
+                <button class="btn btn-ghost" onclick="sortBy('name-desc')">Z → A</button>
+                <button class="btn btn-ghost" onclick="sortBy('code-asc')">Mã ↑</button>
+                <button class="btn btn-ghost" onclick="sortBy('code-desc')">Mã ↓</button>
+              </div>
+            </div>
+            <div class="book-grid">
+              ${books.length ? books.map(bookCardTemplate).join('') : '<div class="panel"><div class="empty">Không tìm thấy sách phù hợp</div></div>'}
+            </div>
+          `;
+        }
+
+        function bookCardTemplate(book) {
+          const user = getCurrentUser();
+          const borrowed = Number(book.total || 0) - Number(book.quantity || 0);
+          const statusTag = book.quantity > 5 ? 'tag-ok' : book.quantity > 0 ? 'tag-warn' : 'tag-bad';
+          const statusText = book.quantity > 5 ? 'Còn nhiều' : book.quantity > 0 ? 'Sắp hết' : 'Đã hết';
+          const actionHtml = user.role === 'admin'
+            ? `
+              <div class="actions">
+                <button class="btn btn-soft" onclick="openBookEditor('${book.id}')">Sửa</button>
+                <button class="btn btn-ghost" onclick="deleteBook('${book.id}')">Xoá</button>
+              </div>
+            `
+            : `
+              <div class="actions">
+                <button class="btn btn-primary" ${book.quantity <= 0 ? 'disabled style="opacity:.55;cursor:not-allowed"' : ''} onclick="openBorrowModal('${book.id}')">Mượn sách</button>
+              </div>
+            `;
+          return `
+            <div class="card">
+              <div class="badge ${statusTag}">${statusText}</div>
+              <div class="card-title">${escapeHtml(book.name)}</div>
+              <div class="meta">Mã: <b>${escapeHtml(book.id)}</b></div>
+              <div class="meta">Tác giả: ${escapeHtml(book.author)}</div>
+              <div class="meta">Thể loại: ${escapeHtml(book.category)}</div>
+              <div class="meta">Tồn kho: ${book.quantity}/${book.total} · Đang mượn: ${borrowed}</div>
+              ${actionHtml}
+            </div>
+          `;
+        }
+
+        function getSortedFilteredBooks() {
+          const key = state.search.trim().toLowerCase();
+          const books = getBooks().filter(b => {
+            if (!key) return true;
+            return [b.id, b.name, b.author, b.category].some(v => String(v).toLowerCase().includes(key));
+          });
+          books.sort((a, b) => {
+            if (state.sort === 'name-asc') return a.name.localeCompare(b.name, 'vi');
+            if (state.sort === 'name-desc') return b.name.localeCompare(a.name, 'vi');
+            if (state.sort === 'code-asc') return a.id.localeCompare(b.id, 'vi');
+            if (state.sort === 'code-desc') return b.id.localeCompare(a.id, 'vi');
+            return 0;
+          });
+          return books;
+        }
+
+        function updateSearch(value) {
+          state.search = value;
+          renderApp();
+        }
+
+        function sortBy(value) {
+          state.sort = value;
+          renderApp();
+        }
+
+        function openBookEditor(bookId = null) {
+          const book = bookId ? getBooks().find(b => b.id === bookId) : { id: '', name: '', author: '', category: '', total: 1, quantity: 1 };
+          state.editingBook = bookId;
+          openModal(`
+            <div class="modal-card">
+              <div class="modal-header">
+                <h3>${bookId ? 'Sửa sách' : 'Thêm sách'}</h3>
+                <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+              </div>
+              <div class="form-grid">
+                <input id="bookId" class="field" placeholder="Mã sách" value="${escapeHtml(book.id || '')}" ${bookId ? 'readonly' : ''}>
+                <input id="bookName" class="field" placeholder="Tên sách" value="${escapeHtml(book.name || '')}">
+                <input id="bookAuthor" class="field" placeholder="Tác giả" value="${escapeHtml(book.author || '')}">
+                <input id="bookCategory" class="field" placeholder="Thể loại" value="${escapeHtml(book.category || '')}">
+                <input id="bookTotal" class="field" type="number" min="0" placeholder="Tổng số bản" value="${Number(book.total || 1)}">
+                <input id="bookQuantity" class="field" type="number" min="0" placeholder="Số bản có sẵn" value="${Number(book.quantity || 1)}">
+              </div>
+              <div class="modal-actions">
+                <button class="btn btn-primary" onclick="saveBook()">Lưu</button>
+              </div>
+            </div>
+          `);
+        }
+
+        function saveBook() {
+          const id = document.getElementById('bookId').value.trim();
+          const name = document.getElementById('bookName').value.trim();
+          const author = document.getElementById('bookAuthor').value.trim();
+          const category = document.getElementById('bookCategory').value.trim();
+          const total = Number(document.getElementById('bookTotal').value);
+          const quantity = Number(document.getElementById('bookQuantity').value);
+          if (!id || !name || !author || !category) {
+            alert('Vui lòng nhập đầy đủ thông tin sách');
+            return;
+          }
+          if (!Number.isFinite(total) || total < 0 || !Number.isFinite(quantity) || quantity < 0) {
+            alert('Số lượng không hợp lệ');
+            return;
+          }
+          if (quantity > total) {
+            alert('Số có sẵn không thể lớn hơn tổng số bản');
+            return;
+          }
+          const books = getBooks();
+          const idx = books.findIndex(b => b.id === id);
+          if (state.editingBook && idx >= 0) {
+            const borrowed = books[idx].total - books[idx].quantity;
+            if (total < borrowed) {
+              alert('Tổng số bản mới không được nhỏ hơn số bản đang được mượn');
+              return;
+            }
+            books[idx] = { id, name, author, category, total, quantity };
+          } else {
+            if (idx >= 0) {
+              alert('Mã sách đã tồn tại');
+              return;
+            }
+            books.push({ id, name, author, category, total, quantity });
+          }
+          saveBooks(books);
+          closeModal();
+          renderApp();
+        }
+
+        function deleteBook(id) {
+          const books = getBooks();
+          const book = books.find(b => b.id === id);
+          if (!book) return;
+          const active = getAllBorrowedRecords().filter(r => r.bookId === id && r.status === 'borrowing' && r.qty > r.returnedQty).length;
+          if (active > 0) {
+            alert('Không thể xoá vì vẫn còn lượt mượn đang hoạt động');
+            return;
+          }
+          if (!confirm(`Xoá sách ${book.name}?`)) return;
+          saveBooks(books.filter(b => b.id !== id));
+          renderApp();
+        }
+
+        function openBorrowModal(bookId) {
+          const user = getCurrentUser();
+          if (user.role !== 'user') return;
+          const book = getBooks().find(b => b.id === bookId);
+          if (!book || book.quantity <= 0) {
+            alert('Sách đã hết');
+            return;
+          }
+          state.borrowBookId = bookId;
+          const defaultDate = toDateInput(addDays(new Date(), 7));
+          openModal(`
+            <div class="modal-card">
+              <div class="modal-header">
+                <h3>Mượn sách</h3>
+                <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+              </div>
+              <div class="panel" style="margin:0 0 14px;background:#fffaf0">
+                <b>${escapeHtml(book.name)}</b>
+                <div class="small">Mã: ${book.id} · Tác giả: ${escapeHtml(book.author)} · Còn ${book.quantity}/${book.total} bản</div>
+              </div>
+              <div class="form-grid">
+                <input id="borrowQty" class="field" type="number" min="1" max="${book.quantity}" value="1" placeholder="Số lượng mượn">
+                <input id="borrowDue" class="field" type="date" value="${defaultDate}">
+              </div>
+              <div class="small" style="margin-top:8px">Chọn số lượng và ngày hẹn trả. Hệ thống sẽ trừ kho ngay khi xác nhận.</div>
+              <div class="modal-actions">
+                <button class="btn btn-primary" onclick="confirmBorrow()">Xác nhận mượn</button>
+              </div>
+            </div>
+          `);
+        }
+
+        function confirmBorrow() {
+          const user = getCurrentUser();
+          if (!user || user.role !== 'user') return;
+          const books = getBooks();
+          const book = books.find(b => b.id === state.borrowBookId);
+          if (!book) return;
+          const qty = Number(document.getElementById('borrowQty').value);
+          const dueDate = document.getElementById('borrowDue').value;
+          if (!Number.isInteger(qty) || qty <= 0) {
+            alert('Số lượng mượn không hợp lệ');
+            return;
+          }
+          if (qty > book.quantity) {
+            alert('Không đủ số lượng trong kho');
+            return;
+          }
+          if (!dueDate) {
+            alert('Vui lòng chọn ngày hẹn trả');
+            return;
+          }
+          const due = new Date(dueDate + 'T00:00:00');
+          const today = startOfDay(new Date());
+          if (due < today) {
+            alert('Ngày hẹn trả không hợp lệ');
+            return;
+          }
+          book.quantity -= qty;
+          const record = normalizeBorrowRecord({
+            id: `BR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            bookId: book.id,
+            title: book.name,
+            qty,
+            returnedQty: 0,
+            borrowDate: toDateInput(new Date()),
+            dueDate,
+            status: 'borrowing',
+            noticeDueSoonSent: false,
+            lastOverdueNoticeDay: 0,
+            finePaid: 0,
+            returnedAt: ''
+          });
+          user.borrowed.unshift(record);
+          user.inbox.unshift({ text: `Mượn sách thành công: ${book.name} (${qty} bản), hẹn trả vào ${dueDate}.`, at: new Date().toISOString() });
+          saveBooks(books);
+          saveCurrentUser(user);
+          state.borrowBookId = null;
+          closeModal();
+          syncNotifications();
+          renderApp();
+        }
+
+        function renderBorrowedPage(user) {
+          const active = user.borrowed.filter(r => r.status === 'borrowing' && r.qty > r.returnedQty);
+          const history = user.borrowed.filter(r => r.status === 'returned' || r.returnedQty >= r.qty);
+          document.getElementById('workspace').innerHTML = `
+            <div class="panel">
+              <div class="panel-title"><h3>Sách đã mượn</h3><div class="small">Trả từng phần hoặc toàn bộ</div></div>
+              ${active.length ? active.map(borrowCardTemplate).join('') : '<div class="empty">Bạn chưa có sách đang mượn</div>'}
+            </div>
+            <div class="panel">
+              <div class="panel-title"><h3>Lịch sử đã trả</h3><div class="small">Các lượt mượn đã hoàn tất</div></div>
+              ${history.length ? history.map(historyCardTemplate).join('') : '<div class="empty">Chưa có lịch sử trả sách</div>'}
+            </div>
+          `;
+        }
+
+        function borrowCardTemplate(rec) {
+          const remaining = rec.qty - rec.returnedQty;
+          const today = startOfDay(new Date());
+          const due = new Date(rec.dueDate + 'T00:00:00');
+          const daysLeft = daysBetween(today, due);
+          const overdueDays = Math.max(0, -daysLeft);
+          const fine = overdueDays * remaining * FINE_PER_DAY;
+          const tagClass = overdueDays > 0 ? 'tag-bad' : daysLeft <= 3 ? 'tag-warn' : 'tag-ok';
+          const tagText = overdueDays > 0 ? `Quá hạn ${overdueDays} ngày` : daysLeft === 0 ? 'Hôm nay đến hạn' : `Còn ${daysLeft} ngày`;
+          return `
+            <div class="card" style="margin-bottom:12px">
+              <div class="badge ${tagClass}">${tagText}</div>
+              <div class="card-title">${escapeHtml(rec.title)}</div>
+              <div class="meta">Mã sách: ${rec.bookId}</div>
+              <div class="meta">Số lượng mượn: ${rec.qty}</div>
+              <div class="meta">Đã trả: ${rec.returnedQty}</div>
+              <div class="meta">Còn lại: ${remaining}</div>
+              <div class="meta">Ngày mượn: ${rec.borrowDate}</div>
+              <div class="meta">Ngày hẹn trả: ${rec.dueDate}</div>
+              <div class="meta">Tiền phạt tạm tính: ${formatMoney(fine)}</div>
+              <div class="actions">
+                <button class="btn btn-primary" onclick="openReturnModal('${rec.id}')">Trả sách</button>
+                <button class="btn btn-ghost" onclick="extendBorrow('${rec.id}')">Gia hạn</button>
+              </div>
+            </div>
+          `;
+        }
+
+        function historyCardTemplate(rec) {
+          return `
+            <div class="card" style="margin-bottom:12px">
+              <div class="badge tag-ok">Đã hoàn tất</div>
+              <div class="card-title">${escapeHtml(rec.title)}</div>
+              <div class="meta">Mã sách: ${rec.bookId}</div>
+              <div class="meta">Số lượng: ${rec.qty}</div>
+              <div class="meta">Ngày mượn: ${rec.borrowDate}</div>
+              <div class="meta">Ngày hẹn trả: ${rec.dueDate}</div>
+              <div class="meta">Ngày trả cuối: ${rec.returnedAt || '-'}</div>
+            </div>
+          `;
+        }
+
+        function openReturnModal(recordId) {
+          const user = getCurrentUser();
+          const rec = user.borrowed.find(r => r.id === recordId);
+          if (!rec) return;
+          const remaining = rec.qty - rec.returnedQty;
+          const today = startOfDay(new Date());
+          const due = new Date(rec.dueDate + 'T00:00:00');
+          const overdueDays = Math.max(0, daysBetween(due, today));
+          const fineNow = overdueDays * remaining * FINE_PER_DAY;
+          state.returnRecordId = recordId;
+          openModal(`
+            <div class="modal-card">
+              <div class="modal-header">
+                <h3>Trả sách</h3>
+                <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+              </div>
+              <div class="panel" style="margin:0 0 14px;background:#fffaf0">
+                <b>${escapeHtml(rec.title)}</b>
+                <div class="small">Còn lại: ${remaining} bản · Hẹn trả: ${rec.dueDate} · Phạt tạm tính: ${formatMoney(fineNow)}</div>
+              </div>
+              <div class="form-grid">
+                <input id="returnQty" class="field" type="number" min="1" max="${remaining}" value="${remaining}" placeholder="Số lượng trả">
+                <input id="returnNote" class="field" placeholder="Ghi chú nếu có" value="">
+              </div>
+              <div class="modal-actions">
+                <button class="btn btn-primary" onclick="confirmReturn()">Xác nhận trả</button>
+              </div>
+            </div>
+          `);
+        }
+
+        function confirmReturn() {
+          const user = getCurrentUser();
+          if (!user) return;
+          const rec = user.borrowed.find(r => r.id === state.returnRecordId);
+          if (!rec) return;
+          const books = getBooks();
+          const book = books.find(b => b.id === rec.bookId);
+          const qty = Number(document.getElementById('returnQty').value);
+          const remaining = rec.qty - rec.returnedQty;
+          if (!Number.isInteger(qty) || qty <= 0 || qty > remaining) {
+            alert('Số lượng trả không hợp lệ');
+            return;
+          }
+          const today = startOfDay(new Date());
+          const due = new Date(rec.dueDate + 'T00:00:00');
+          const overdueDays = Math.max(0, daysBetween(due, today));
+          const fine = overdueDays * qty * FINE_PER_DAY;
+          rec.returnedQty += qty;
+          rec.finePaid = Number(rec.finePaid || 0) + fine;
+          if (book) book.quantity += qty;
+          if (rec.returnedQty >= rec.qty) {
+            rec.status = 'returned';
+            rec.returnedAt = toDateInput(new Date());
+          }
+          user.inbox.unshift({ text: `Trả sách thành công: ${rec.title} (${qty} bản). ${fine > 0 ? `Tiền phạt: ${formatMoney(fine)}.` : 'Không có tiền phạt.'}`, at: new Date().toISOString() });
+          saveBooks(books);
+          saveCurrentUser(user);
+          state.returnRecordId = null;
+          closeModal();
+          syncNotifications();
+          renderApp();
+        }
+
+        function extendBorrow(recordId) {
+          const user = getCurrentUser();
+          const rec = user.borrowed.find(r => r.id === recordId);
+          if (!rec || rec.status !== 'borrowing') return;
+          const days = Number(prompt('Nhập số ngày gia hạn', '7'));
+          if (!Number.isInteger(days) || days <= 0 || days > 30) {
+            alert('Số ngày gia hạn không hợp lệ');
+            return;
+          }
+          const currentDue = new Date(rec.dueDate + 'T00:00:00');
+          const newDue = addDays(currentDue, days);
+          rec.dueDate = toDateInput(newDue);
+          rec.noticeDueSoonSent = false;
+          rec.lastOverdueNoticeDay = 0;
+          user.inbox.unshift({ text: `Gia hạn mượn sách: ${rec.title} thêm ${days} ngày, hạn mới ${rec.dueDate}.`, at: new Date().toISOString() });
+          saveCurrentUser(user);
+          syncNotifications();
+          renderApp();
+        }
+
+        function renderProfilePage(user) {
+          document.getElementById('workspace').innerHTML = `
+            <div class="panel">
+              <div class="panel-title"><h3>Thông tin cá nhân</h3><div class="small">Chỉ người dùng mới chỉnh sửa</div></div>
+              <div class="form-grid">
+                <input id="profileUsername" class="field" value="${escapeHtml(user.username)}" readonly>
+                <input id="profileFullName" class="field" value="${escapeHtml(user.fullName || '')}" placeholder="Họ và tên">
+                <input id="profileEmail" class="field" value="${escapeHtml(user.email || '')}" placeholder="Email">
+                <input id="profilePhone" class="field" value="${escapeHtml(user.phone || '')}" placeholder="Số điện thoại">
+                <input id="profilePassword" class="field" type="password" placeholder="Mật khẩu mới">
+                <input id="profileConfirm" class="field" type="password" placeholder="Xác nhận mật khẩu mới">
+              </div>
+              <div class="modal-actions" style="justify-content:flex-start">
+                <button class="btn btn-primary" onclick="saveProfile()">Lưu thay đổi</button>
+              </div>
+            </div>
+          `;
+        }
+
+        function saveProfile() {
+          const user = getCurrentUser();
+          const users = getUsers();
+          const idx = users.findIndex(u => u.username === user.username);
+          if (idx < 0) return;
+          const fullName = document.getElementById('profileFullName').value.trim();
+          const email = document.getElementById('profileEmail').value.trim();
+          const phone = document.getElementById('profilePhone').value.trim();
+          const password = document.getElementById('profilePassword').value;
+          const confirm = document.getElementById('profileConfirm').value;
+          if (!fullName) {
+            alert('Họ và tên không được để trống');
+            return;
+          }
+          if (password || confirm) {
+            if (password !== confirm) {
+              alert('Mật khẩu xác nhận không khớp');
+              return;
+            }
+            if (password.length < 3) {
+              alert('Mật khẩu mới quá ngắn');
+              return;
+            }
+            users[idx].password = password;
+          }
+          users[idx].fullName = fullName;
+          users[idx].email = email;
+          users[idx].phone = phone;
+          saveUsers(users);
+          localStorage.setItem('currentUser', user.username);
+          alert('Đã cập nhật thông tin cá nhân');
+          renderApp();
+        }
+
+        function renderInboxPage(user) {
+          const inbox = user.inbox || [];
+          document.getElementById('workspace').innerHTML = `
+            <div class="panel">
+              <div class="panel-title"><h3>Hòm thư</h3><div class="small">Thông báo hệ thống và lịch sử thao tác</div></div>
+              <div class="notice-list">
+                ${inbox.length ? inbox.map(m => `
+                  <div class="notice-item">
+                    <div>${escapeHtml(m.text || m)}</div>
+                    <div class="time">${formatDateTime(m.at || new Date().toISOString())}</div>
+                  </div>
+                `).join('') : '<div class="empty">Chưa có thông báo nào</div>'}
+              </div>
+            </div>
+          `;
+        }
+
+        function renderUsersPage(user) {
+          const users = getUsers().filter(u => u.role === 'user');
+          const rows = users.map(u => {
+            const active = u.borrowed.filter(r => r.status === 'borrowing' && r.qty > r.returnedQty).length;
+            const overdue = countOverdueRecords(u.username);
+            const fine = calculateFineForUser(u.username);
+            return `
+              <tr>
+                <td><b>${escapeHtml(u.username)}</b><div class="small">${escapeHtml(u.fullName || '')}</div></td>
+                <td>${escapeHtml(u.email || '-')}</td>
+                <td>${active}</td>
+                <td>${overdue}</td>
+                <td>${formatMoney(fine)}</td>
+                <td>
+                  <div class="toolbar">
+                    <button class="btn btn-ghost" onclick="openUserDetail('${escapeAttr(u.username)}')">Xem</button>
+                    <button class="btn btn-soft" onclick="resetUserPassword('${escapeAttr(u.username)}')">Đặt lại MK</button>
+                    <button class="btn btn-ghost" onclick="deleteUser('${escapeAttr(u.username)}')">Xoá</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+          document.getElementById('workspace').innerHTML = `
+            <div class="panel">
+              <div class="panel-title"><h3>Quản lý user</h3><div class="small">Xem tình trạng mượn và tiền phạt</div></div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Tài khoản</th>
+                    <th>Email</th>
+                    <th>Đang mượn</th>
+                    <th>Quá hạn</th>
+                    <th>Phạt</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>${rows || '<tr><td colspan="6">Không có người dùng</td></tr>'}</tbody>
+              </table>
+            </div>
+          `;
+        }
+
+        function openUserDetail(username) {
+          const user = getUsers().find(u => u.username === username);
+          if (!user) return;
+          const active = user.borrowed.filter(r => r.status === 'borrowing' && r.qty > r.returnedQty);
+          const history = user.borrowed.filter(r => r.status === 'returned' || r.returnedQty >= r.qty);
+          openModal(`
+            <div class="modal-card">
+              <div class="modal-header">
+                <h3>Chi tiết user</h3>
+                <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+              </div>
+              <div class="panel" style="margin:0 0 14px">
+                <b>${escapeHtml(user.fullName || user.username)}</b>
+                <div class="small">Tài khoản: ${escapeHtml(user.username)} · Email: ${escapeHtml(user.email || '-')} · SĐT: ${escapeHtml(user.phone || '-')}</div>
+              </div>
+              <div class="panel" style="margin:0 0 14px">
+                <b>Sách đang mượn</b>
+                ${active.length ? active.map(r => `<div class="notice-item"><div><b>${escapeHtml(r.title)}</b></div><div class="small">${r.qty - r.returnedQty}/${r.qty} · Hẹn trả ${r.dueDate}</div></div>`).join('') : '<div class="empty">Không có</div>'}
+              </div>
+              <div class="panel" style="margin:0">
+                <b>Lịch sử đã trả</b>
+                ${history.length ? history.map(r => `<div class="notice-item"><div><b>${escapeHtml(r.title)}</b></div><div class="small">Mượn ${r.borrowDate} · Trả ${r.returnedAt || '-'}</div></div>`).join('') : '<div class="empty">Không có</div>'}
+              </div>
+            </div>
+          `);
+        }
+
+        function resetUserPassword(username) {
+          const users = getUsers();
+          const idx = users.findIndex(u => u.username === username);
+          if (idx < 0) return;
+          if (!confirm(`Đặt lại mật khẩu cho ${username} về 123456?`)) return;
+          users[idx].password = '123456';
+          users[idx].inbox = Array.isArray(users[idx].inbox) ? users[idx].inbox : [];
+          users[idx].inbox.unshift({ text: 'Mật khẩu đã được admin đặt lại thành 123456.', at: new Date().toISOString() });
+          saveUsers(users);
+          renderApp();
+        }
+
+        function deleteUser(username) {
+          if (username === 'admin') return;
+          const current = getCurrentUser();
+          if (current && current.username === username) return;
+          const users = getUsers();
+          const user = users.find(u => u.username === username);
+          if (!user) return;
+          if (!confirm(`Xoá tài khoản ${username}?`)) return;
+          saveUsers(users.filter(u => u.username !== username));
+          renderApp();
+        }
+
+        function renderStockPage() {
+          const books = getBooks();
+          const rows = books.map(b => `
+            <tr>
+              <td><b>${escapeHtml(b.id)}</b></td>
+              <td>${escapeHtml(b.name)}</td>
+              <td>${escapeHtml(b.author)}</td>
+              <td>${escapeHtml(b.category)}</td>
+              <td>${b.quantity}</td>
+              <td>${b.total}</td>
+              <td>${b.total - b.quantity}</td>
+            </tr>
+          `).join('');
+          document.getElementById('workspace').innerHTML = `
+            <div class="panel">
+              <div class="panel-title"><h3>Theo dõi tồn kho</h3><div class="small">Tổng số, còn lại và số đang mượn</div></div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Mã</th>
+                    <th>Tên sách</th>
+                    <th>Tác giả</th>
+                    <th>Thể loại</th>
+                    <th>Còn lại</th>
+                    <th>Tổng</th>
+                    <th>Đang mượn</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          `;
+        }
+
+        function getAllBorrowedRecords() {
+          return getUsers().flatMap(u => (u.borrowed || []).map(r => ({ ...r, username: u.username })));
+        }
+
+        function countOverdueRecords(username) {
+          const user = getUsers().find(u => u.username === username);
+          if (!user) return 0;
+          const today = startOfDay(new Date());
+          return (user.borrowed || []).filter(r => r.status === 'borrowing' && r.qty > r.returnedQty && daysBetween(today, new Date(r.dueDate + 'T00:00:00')) < 0).length;
+        }
+
+        function countAllOverdueRecords() {
+          return getUsers().filter(u => u.role === 'user').reduce((sum, u) => sum + countOverdueRecords(u.username), 0);
+        }
+
+        function calculateFineForUser(username) {
+          const user = getUsers().find(u => u.username === username);
+          if (!user) return 0;
+          const today = startOfDay(new Date());
+          return (user.borrowed || []).reduce((sum, r) => {
+            if (r.status !== 'borrowing' || r.qty <= r.returnedQty) return sum;
+            const remaining = r.qty - r.returnedQty;
+            const due = new Date(r.dueDate + 'T00:00:00');
+            const overdueDays = Math.max(0, daysBetween(due, today));
+            return sum + overdueDays * remaining * FINE_PER_DAY;
+          }, 0);
+        }
+
+        function syncNotifications() {
+          const users = getUsers();
+          const today = startOfDay(new Date());
+          let changed = false;
+          users.forEach(u => {
+            if (!Array.isArray(u.borrowed)) return;
+            u.borrowed.forEach(r => {
+              if (r.status !== 'borrowing') return;
+              const remaining = r.qty - r.returnedQty;
+              if (remaining <= 0) return;
+              const due = new Date(r.dueDate + 'T00:00:00');
+              const daysLeft = daysBetween(today, due);
+              const overdueDays = Math.max(0, -daysLeft);
+              if (daysLeft >= 0 && daysLeft <= 3 && !r.noticeDueSoonSent) {
+                u.inbox.unshift({ text: `Nhắc nhở: sách ${r.title} sắp đến hạn trả vào ${r.dueDate}.`, at: new Date().toISOString() });
+                r.noticeDueSoonSent = true;
+                changed = true;
+              }
+              if (overdueDays >= 1 && (r.lastOverdueNoticeDay === 0 || overdueDays - r.lastOverdueNoticeDay >= 3)) {
+                u.inbox.unshift({ text: `Sách ${r.title} đã quá hạn ${overdueDays} ngày. Tiền phạt tạm tính: ${formatMoney(overdueDays * remaining * FINE_PER_DAY)}.`, at: new Date().toISOString() });
+                r.lastOverdueNoticeDay = overdueDays;
+                changed = true;
+              }
+            });
+          });
+          if (changed) saveUsers(users);
+        }
+
+        function formatMoney(value) {
+          const n = Number(value || 0);
+          return n.toLocaleString('vi-VN') + ' đ';
+        }
+
+        function formatDateTime(value) {
+          if (!value) return '';
+          const d = new Date(value);
+          if (Number.isNaN(d.getTime())) return String(value);
+          return d.toLocaleString('vi-VN');
+        }
+
+        function escapeHtml(text) {
+          return String(text ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+        }
+
+        function escapeAttr(text) {
+          return escapeHtml(text).replaceAll('`', '&#96;');
+        }
+
+        function openModal(html) {
+          document.getElementById('modalOverlay').classList.remove('hidden');
+          const box = document.getElementById('modalBox');
+          box.classList.remove('hidden');
+          box.innerHTML = html;
+        }
+
+        function closeModal() {
+          document.getElementById('modalOverlay').classList.add('hidden');
+          const box = document.getElementById('modalBox');
+          box.classList.add('hidden');
+          box.innerHTML = '';
+        }
+
+        function showInitialScreen() {
+          normalizeData();
+          const current = getCurrentUser();
+          if (current) {
+            document.getElementById('roleScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+            state.role = current.role;
+            state.tab = current.role === 'admin' ? 'dashboard' : 'books';
+            syncNotifications();
+            renderApp();
+          }
+        }
+
+        setInterval(() => {
+          if (!getCurrentUser()) return;
+          syncNotifications();
+        }, 60000);
+
+        window.addEventListener('DOMContentLoaded', showInitialScreen);
+    </script>
+</body>
+</html>
